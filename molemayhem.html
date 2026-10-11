@@ -1069,8 +1069,9 @@ function addPoints(n) { G.points += n; if ($("c-pts")) $("c-pts").textContent = 
 var W = 400, H = 560, cv = $("cv"), ctx = cv.getContext("2d"), SCALE = 1;
 // girders: top surface y at x (sloped like the arcade original). down = direction barrels roll.
 function girder(x0, y0, x1, y1, down) { return { x0: x0, x1: x1, y: function (x) { return y0 + (y1 - y0) * (x - x0) / (x1 - x0); }, down: down }; }
-var GD = [girder(0, 540, 400, 528, -1), girder(0, 402, 355, 414, 1), girder(40, 284, 400, 272, -1), girder(0, 150, 345, 160, 1)];
-var LAD_X = [[90, 200, 310], [100, 205, 310], [150, 240, 330]];
+var GD = [girder(0, 540, 400, 528, -1), girder(0, 402, 370, 414, 1), girder(30, 284, 400, 272, -1), girder(0, 150, 370, 161, 1)];
+// ladder positions: each floor is offset from the floor below, so ladders never line up
+var LAD_X = [[125, 230, 340], [70, 180, 285], [125, 230, 340]];
 var MOLE_X = 62, BR = 10;
 var LEVEL_INFO = [
   { name: "THE LOADING BAY", tip: "Ladders show the <b>operation</b>. Pick ÷ or × wisely." },
@@ -1245,9 +1246,9 @@ function update(dt) {
     var L = h.lad, by = GD[L.f].y(L.x), ty = GD[L.f + 1].y(L.x);
     var mv = (K.u ? -1 : 0) + (K.d ? 1 : 0);
     if (mv) { h.y += mv * CLIMB * dt; h.anim += dt; if (Math.floor(h.anim / .18) !== Math.floor((h.anim - dt) / .18)) Sound.step(); }
-    if (h.y >= by) { h.y = by; h.state = "walk"; h.floor = L.f; paintCHud(); paintQ(); }
+    if (h.y >= by) { h.y = by; h.state = "walk"; h.floor = L.f; h.hold = true; paintCHud(); paintQ(); }
     else if (!L.lab.ok && (by - h.y) / (by - ty) >= 0.45) snap(L);
-    else if (h.y <= ty) { h.y = ty; h.state = "walk"; h.floor = L.f + 1; arrive(L); }
+    else if (h.y <= ty) { h.y = ty; h.state = "walk"; h.floor = L.f + 1; h.hold = true; arrive(L); }
   } else {
     var dx = (K.r ? 1 : 0) - (K.l ? 1 : 0);
     if (dx) { h.face = dx; h.anim += dt; }
@@ -1256,7 +1257,8 @@ function update(dt) {
       if (!onGirder(h.floor, h.x)) { h.state = "air"; h.vy = 0; h.ignore = -1; }
       else {
         h.y = GD[h.floor].y(h.x);
-        var up = K.u && ladderNear(h.floor, h.x, "up"), dn = K.d && ladderNear(h.floor, h.x, "down");
+        if (!K.u && !K.d) h.hold = false;
+        var up = !h.hold && K.u && ladderNear(h.floor, h.x, "up"), dn = !h.hold && K.d && ladderNear(h.floor, h.x, "down");
         if (K.jq) { h.state = "air"; h.vy = -JUMPV; h.jumpFrom = h.floor; Sound.jump(); }
         else if (up) { h.state = "climb"; h.lad = up; h.x = up.x; h.y -= 1; }
         else if (dn) { h.state = "climb"; h.lad = dn; h.x = dn.x; h.y += 2; }
