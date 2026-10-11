@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Mole Mayhem</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -75,7 +77,9 @@ body.playing .wrap { padding: 8px 12px 10px; }
 .hero h1 em { font-style: normal; background: var(--yellow); color: var(--ink); border: var(--b); border-radius: 14px; padding: 0 10px; display: inline-block; transform: rotate(-2deg); }
 .hero p { margin: 0; max-width: 40ch; font-weight: 600; }
 .hero .pill { color: var(--ink); align-self: flex-start; }
-.hero .cast { position: absolute; right: 14px; top: 14px; width: 74px; height: 80px; object-fit: contain; image-rendering: auto; }
+.hero-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.hero-title { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; min-width: 0; }
+.hero .cast { width: clamp(110px, 30vw, 170px); height: auto; flex: none; object-fit: contain; image-rendering: auto; filter: drop-shadow(4px 4px 0 rgba(31,42,46,.35)); margin: -6px -4px -10px 0; }
 .demo { background: #fff; color: var(--ink); border: var(--b); border-radius: 16px; padding: 12px 14px; font-weight: 700; display: flex; flex-direction: column; gap: 8px; font-size: .95rem; }
 .demo small { font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--teal-ink); }
 .mmap { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
@@ -108,7 +112,7 @@ label.f input:focus, label.f select:focus { outline: 3px solid var(--yellow); ou
 .best b { color: var(--ink); }
 .how { margin: 0; padding-left: 1.2em; font-size: .9rem; font-weight: 600; color: var(--muted); }
 @media (min-width: 760px) { .start { grid-template-columns: 1.05fr 1fr; gap: 28px; } }
-@media (max-width: 420px) { .modes { grid-template-columns: 1fr; } .hero .cast { display: none; } }
+@media (max-width: 420px) { .modes { grid-template-columns: 1fr; } .hero .cast { width: 96px; } }
 
 /* ---------- dark arcade (climb + boss) ---------- */
 body.dark { background: var(--night); }
@@ -359,9 +363,11 @@ canvas#confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-
   <!-- START -->
   <section id="scr-start" class="start">
     <div class="card hero">
-      <img class="cast" src="mole.png" alt="" onerror="this.remove()">
-      <span class="pill">Sec 3–4 Chemistry · The mole concept</span>
-      <h1>Mole <em>Mayhem</em></h1>
+      <div class="hero-top">
+        <div class="hero-title"><span class="pill">Sec 3–4 Chemistry · The mole concept</span>
+        <h1>Mole <em>Mayhem</em></h1></div>
+        <img class="cast" src="mole.png" alt="The Mole Scientist" onerror="this.remove()">
+      </div>
       <p>The Mole Scientist has stolen your research and fled to the top of his lair. Climb the right ladders, dodge his barrels, then beat him in a mole-calculation showdown.</p>
       <div class="demo" aria-label="Example">
         <small>Example climb</small>
