@@ -1,0 +1,1736 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mole Mayhem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+/* Layout: Arcade Punch (light, brand colours) for start and results; dark neon arcade for the climb and the boss fight. */
+:root {
+  --orange: #FF8243; --pink: #FFC0CB; --yellow: #FCE883; --teal: #069494; --teal-ink: #057A7A;
+  --orange-tint: #FFE6DA; --pink-tint: #FFEEF1; --yellow-tint: #FEF8D9; --teal-tint: #DDF2F2;
+  --ink: #1F2A2E; --muted: #56656A; --line: #E4E8E9; --bg: #FFFFFF;
+  --good: #1E9E62; --good-tint: #D8F3E4; --bad: #E2463A;
+  --b: 3px solid var(--ink);
+  --font: "Open Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --pixel: "Press Start 2P", ui-monospace, "Courier New", monospace;
+  --night: #0D0B1A; --night-2: #19152E; --night-3: #2A2448;
+  --neon-teal: #2EF2E0; --neon-pink: #FF7FB0; --neon-yellow: #FCE883; --neon-orange: #FF8243; --neon-red: #FF4D5E; --neon-green: #4CF08A;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); }
+body {
+  font: 16px/1.5 var(--font); min-height: 100vh; min-height: 100dvh;
+  display: flex; flex-direction: column;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+  transition: background .3s;
+}
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+[hidden] { display: none !important; }
+.sub { font-size: .68em; position: relative; bottom: -.25em; line-height: 0; }
+sup { font-size: .68em; line-height: 0; position: relative; top: -.1em; vertical-align: super; font-weight: 800; }
+:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
+
+/* ---------- shared pieces ---------- */
+.wrap { width: 100%; max-width: 1040px; margin: 0 auto; padding: 16px; flex: 1; display: flex; flex-direction: column; }
+.card { background: #fff; border: var(--b); border-radius: 22px; box-shadow: 6px 6px 0 var(--ink); }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border: var(--b); border-radius: 16px; padding: 14px 18px; font-weight: 800; font-size: 1.1rem;
+  background: var(--orange); color: var(--ink); box-shadow: 0 5px 0 var(--ink);
+  transition: transform .08s, box-shadow .08s; user-select: none; -webkit-user-select: none;
+}
+.btn:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 1px 0 var(--ink); }
+.btn.big { width: 100%; font-size: 1.15rem; text-transform: uppercase; letter-spacing: .03em; padding: 16px; }
+.btn.alt { background: #fff; }
+.btn.sm { padding: 9px 14px; font-size: .95rem; border-radius: 12px; box-shadow: 0 3px 0 var(--ink); }
+.pill { display: inline-block; font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; border: 2px solid var(--ink); border-radius: 99px; padding: 2px 10px; background: #fff; }
+.icon-btn { width: 42px; height: 42px; border-radius: 12px; border: var(--b); background: #fff; display: grid; place-items: center; box-shadow: 0 3px 0 var(--ink); padding: 0; flex: none; }
+.icon-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+.icon-btn svg { width: 20px; height: 20px; }
+.icon-btn.off { opacity: .45; }
+
+/* ---------- top bar ---------- */
+.topbar { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 2px solid var(--line); background: #fff; }
+.topbar .brand { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; text-decoration: none; color: var(--ink); }
+.topbar .brand img { width: 38px; height: 38px; border-radius: 50%; border: 2.5px solid var(--ink); background: var(--yellow); object-fit: cover; flex: none; }
+.topbar .brand b { font-weight: 800; font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.topbar .brand small { display: block; font-size: .72rem; color: var(--muted); font-weight: 600; line-height: 1.2; }
+body.playing .topbar { padding: 6px 12px; }
+body.playing .topbar .brand img { width: 30px; height: 30px; }
+body.playing .icon-btn { width: 36px; height: 36px; }
+body.playing footer { display: none; }
+body.playing .wrap { padding: 8px 12px 10px; }
+
+/* ---------- start screen ---------- */
+.start { display: grid; gap: 22px; grid-template-columns: 1fr; align-items: start; margin: auto 0; padding-block: 8px 20px; }
+.hero { background: var(--teal); color: #fff; padding: 22px; position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 14px; }
+.hero h1 { margin: 6px 0 0; font-size: clamp(2rem, 7vw, 3rem); line-height: 1.05; font-weight: 800; letter-spacing: -.01em; text-wrap: balance; }
+.hero h1 em { font-style: normal; background: var(--yellow); color: var(--ink); border: var(--b); border-radius: 14px; padding: 0 10px; display: inline-block; transform: rotate(-2deg); }
+.hero p { margin: 0; max-width: 40ch; font-weight: 600; }
+.hero .pill { color: var(--ink); align-self: flex-start; }
+.hero .cast { position: absolute; right: 14px; top: 14px; width: 74px; height: 80px; object-fit: contain; image-rendering: auto; }
+.demo { background: #fff; color: var(--ink); border: var(--b); border-radius: 16px; padding: 12px 14px; font-weight: 700; display: flex; flex-direction: column; gap: 8px; font-size: .95rem; }
+.demo small { font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--teal-ink); }
+.mmap { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.mmap .q { background: var(--yellow-tint); border: 2px solid var(--ink); border-radius: 10px; padding: 2px 8px; white-space: nowrap; }
+.mmap .q.mol { background: var(--yellow); }
+.mmap .op { font-size: .8rem; color: var(--teal-ink); font-weight: 800; white-space: nowrap; }
+.modes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.mode-card { padding: 12px; border: var(--b); border-radius: 16px; background: var(--yellow-tint); color: var(--ink); }
+.mode-card.dark { background: var(--night); color: #fff; }
+.mode-card b { display: block; font-weight: 800; }
+.mode-card.dark b { font-family: var(--pixel); font-size: .72rem; color: var(--neon-yellow); line-height: 1.6; }
+.mode-card span { font-size: .85rem; display: block; line-height: 1.4; margin-top: 4px; }
+.form { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.form h2 { margin: 0; font-size: 1.25rem; font-weight: 800; }
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.fields .full { grid-column: 1 / -1; }
+label.f { display: flex; flex-direction: column; gap: 4px; font-weight: 700; font-size: .9rem; }
+label.f input, label.f select { font-size: 16px; padding: 12px; border: 2.5px solid var(--ink); border-radius: 12px; background: #fff; width: 100%; min-width: 0; }
+label.f input:focus, label.f select:focus { outline: 3px solid var(--yellow); outline-offset: 1px; }
+.grp { display: flex; flex-direction: column; gap: 6px; }
+.grp > span { font-weight: 700; font-size: .9rem; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.chip { border: 2.5px solid var(--ink); border-radius: 12px; background: #fff; padding: 8px 12px; font-weight: 700; font-size: .9rem; box-shadow: 0 3px 0 var(--ink); }
+.chip[aria-pressed="true"] { background: var(--yellow); }
+.seg .chip { text-align: center; }
+.seg .chip small { display: block; font-weight: 600; font-size: .75rem; color: var(--muted); }
+.form-err { color: var(--bad); font-weight: 700; font-size: .9rem; min-height: 1.2em; margin: -4px 0 0; }
+.btn.boss-btn { background: var(--night); color: var(--neon-yellow); font-family: var(--pixel); font-size: .78rem; line-height: 1.5; }
+.best { display: flex; justify-content: space-between; font-size: .9rem; color: var(--muted); font-weight: 700; }
+.best b { color: var(--ink); }
+.how { margin: 0; padding-left: 1.2em; font-size: .9rem; font-weight: 600; color: var(--muted); }
+@media (min-width: 760px) { .start { grid-template-columns: 1.05fr 1fr; gap: 28px; } }
+@media (max-width: 420px) { .modes { grid-template-columns: 1fr; } .hero .cast { display: none; } }
+
+/* ---------- dark arcade (climb + boss) ---------- */
+body.dark { background: var(--night); }
+body.dark .topbar { background: var(--night); border-bottom-color: var(--night-3); }
+body.dark .topbar .brand, body.dark .topbar .brand small { color: #fff; }
+body.dark .icon-btn { background: var(--night-2); border-color: var(--neon-teal); color: var(--neon-teal); box-shadow: 0 3px 0 var(--neon-teal); }
+body.dark footer { color: #8C86A8; }
+body.dark footer a { color: var(--neon-teal); }
+
+/* ---------- climb ---------- */
+.climb { display: flex; flex-direction: column; gap: 8px; color: #fff; flex: 1; min-height: 0; }
+.chud { display: flex; align-items: center; gap: 10px; font-family: var(--pixel); font-size: .58rem; line-height: 1.5; }
+.chud .lv { color: var(--neon-yellow); }
+.chud .lv span { color: var(--neon-teal); display: block; }
+.chud .pts { margin-left: auto; text-align: right; color: #fff; }
+.chud .pts small { display: block; color: var(--neon-pink); font-size: .5rem; }
+.hearts { display: flex; gap: 4px; }
+.hearts svg { width: 22px; height: 20px; }
+.hearts .lost { opacity: .22; }
+.hearts .breaking { animation: heartbreak .6s; }
+@keyframes heartbreak { 0% { transform: scale(1); } 40% { transform: scale(1.5) rotate(-12deg); } 100% { transform: scale(1); } }
+.calc-btn { font-family: var(--pixel); font-size: .55rem; line-height: 1.3; border: 3px solid var(--neon-yellow); background: var(--night-2); color: var(--neon-yellow); border-radius: 6px; padding: 7px 8px; box-shadow: 0 3px 0 var(--neon-orange); display: inline-flex; align-items: center; gap: 6px; flex: none; }
+.calc-btn svg { width: 16px; height: 16px; }
+.calc-btn[aria-pressed="true"] { background: var(--neon-yellow); color: var(--night); }
+.qstrip { border: 3px solid var(--neon-teal); border-radius: 6px; background: var(--night-2); padding: 8px 12px; display: flex; flex-direction: column; gap: 4px; min-height: 92px; }
+.qhead { margin: 0; font-family: var(--pixel); font-size: .52rem; color: var(--neon-yellow); line-height: 1.6; }
+.qtext { margin: 0; font-weight: 700; font-size: 1rem; line-height: 1.4; }
+.qtext b { color: var(--neon-yellow); }
+.qeqline { font-weight: 700; font-size: .9rem; color: var(--neon-teal); }
+.st { opacity: .75; font-weight: 600; font-size: .85em; }
+.qhint { margin: 0; font-size: .82rem; font-weight: 600; color: #B8B2D6; }
+.crumb { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; font-size: .78rem; font-weight: 700; color: #B8B2D6; }
+.crumb .q { border: 2px solid var(--night-3); border-radius: 6px; padding: 0 6px; color: #fff; white-space: nowrap; }
+.crumb .q.now { border-color: var(--neon-yellow); color: var(--neon-yellow); }
+.cwrap { position: relative; align-self: center; line-height: 0; }
+#cv { display: block; border: 3px solid var(--neon-teal); border-radius: 6px; background: var(--night); box-shadow: 0 0 0 3px var(--night), 0 0 22px rgba(46,242,224,.3); touch-action: none; }
+.toast { position: absolute; left: 8px; right: 8px; top: 8px; line-height: 1.4; font-weight: 700; font-size: .92rem; padding: 8px 10px; border-radius: 6px; border: 3px solid var(--neon-green); background: rgba(13,11,26,.94); color: #fff; z-index: 3; pointer-events: none; }
+.toast.bad { border-color: var(--neon-red); }
+.toast b { color: var(--neon-green); }
+.toast.bad b { color: var(--neon-red); }
+.cover { position: absolute; inset: 0; background: rgba(13,11,26,.88); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; padding: 18px; line-height: 1.5; z-index: 4; border-radius: 6px; }
+.cover h2 { font-family: var(--pixel); color: var(--neon-yellow); font-size: clamp(1rem, 5vw, 1.5rem); line-height: 1.4; margin: 0; text-shadow: 3px 3px 0 var(--neon-orange); }
+.cover h2.red { color: var(--neon-red); text-shadow: 3px 3px 0 var(--night-3); }
+.cover .lvname { font-family: var(--pixel); font-size: .6rem; color: var(--neon-teal); }
+.cover p { margin: 0; font-weight: 600; max-width: 32ch; font-size: .95rem; }
+.cover ul { margin: 0; padding-left: 1.1em; text-align: left; font-weight: 600; font-size: .9rem; max-width: 34ch; }
+.cover img { width: 90px; height: 90px; object-fit: contain; }
+.cover .row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.paused { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); font-family: var(--pixel); font-size: .55rem; line-height: 1.5; color: var(--night); background: var(--neon-yellow); padding: 6px 10px; border: 3px solid var(--night); z-index: 3; white-space: nowrap; }
+.pad { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: none; max-width: 560px; width: 100%; align-self: center; }
+.pad button { height: 60px; border: 3px solid var(--neon-teal); background: var(--night-2); color: var(--neon-teal); border-radius: 10px; box-shadow: 0 4px 0 var(--neon-teal); font-size: 1.4rem; font-weight: 800; touch-action: none; display: grid; place-items: center; padding: 0; }
+.pad button.on { transform: translateY(3px); box-shadow: 0 1px 0 var(--neon-teal); background: var(--night-3); }
+.pad .jump { font-family: var(--pixel); font-size: .6rem; color: var(--night); background: var(--neon-yellow); border-color: var(--neon-yellow); box-shadow: 0 4px 0 var(--neon-orange); }
+.pad .jump.on { background: var(--neon-orange); box-shadow: 0 1px 0 var(--neon-orange); }
+.keys { text-align: center; font-size: .8rem; font-weight: 600; color: #B8B2D6; margin: 0; }
+.keys kbd { font-family: var(--pixel); font-size: .5rem; border: 2px solid var(--night-3); border-radius: 4px; padding: 2px 5px; color: #fff; background: var(--night-2); }
+.rotate { display: none; text-align: center; font-size: .8rem; color: var(--neon-yellow); font-weight: 700; margin: 0; }
+@media (hover: none), (pointer: coarse) { .keys { display: none; } }
+@media (hover: hover) and (pointer: fine) { .pad { display: none; } }
+body.touch .pad { display: grid; } body.touch .keys { display: none; }
+@media (orientation: landscape) and (max-height: 500px) { .rotate { display: block; } }
+
+/* ---------- boss fight ---------- */
+.boss { display: flex; flex-direction: column; gap: 14px; color: #fff; margin-block: 4px 16px; position: relative; }
+.arena { border: 3px solid var(--neon-teal); border-radius: 6px; background: var(--night-2); box-shadow: 0 0 0 3px var(--night), 0 0 22px rgba(46,242,224,.35); overflow: hidden; position: relative; }
+.arena::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(0,0,0,.22) 0 2px, transparent 2px 4px); }
+.bhud { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 12px 12px 0; font-family: var(--pixel); font-size: .62rem; line-height: 1.6; position: relative; z-index: 2; }
+.hp-who { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.hp-who.boss-side { align-items: flex-end; text-align: right; flex: 1; }
+.hpbar { width: min(220px, 100%); height: 16px; border: 3px solid #fff; background: var(--night); padding: 2px; }
+.hpbar i { display: block; height: 100%; background: var(--neon-pink); width: 100%; transition: width .45s steps(8); }
+.hpbar i.low { background: var(--neon-red); }
+.bname { color: var(--neon-pink); }
+.hname { color: var(--neon-teal); }
+.stage { position: relative; height: 210px; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 6% 18px; }
+.stage::before { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 46px; background:
+  repeating-linear-gradient(90deg, rgba(46,242,224,.35) 0 2px, transparent 2px 40px), linear-gradient(var(--night-3), var(--night)); border-top: 2px solid var(--neon-teal); }
+.stars { position: absolute; inset: 0; background-image: radial-gradient(1.5px 1.5px at 12% 20%, #fff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 38% 12%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 62% 28%, #fff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 84% 10%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 92% 34%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 24% 40%, #fff 50%, transparent 51%); opacity: .7; }
+.sprite { position: relative; z-index: 1; image-rendering: pixelated; }
+.sprite svg, .sprite img { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+.hero-sp.pic { width: 100px; height: 118px; }
+.mon-sp.pic { width: 150px; height: 150px; }
+.sprite.pic img { width: 100%; height: 100%; object-fit: contain; object-position: center bottom; image-rendering: auto; }
+.mon-sp img { transform: scaleX(-1); }
+.hero-sp { width: 86px; animation: bob 1s steps(2) infinite; }
+.mon-sp { width: 140px; animation: bob 1.4s steps(2) infinite; }
+@keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+.hero-sp.atk { animation: lunge-r .45s steps(4); }
+.mon-sp.atk { animation: lunge-l .5s steps(4); }
+@keyframes lunge-r { 50% { transform: translateX(40px); } }
+@keyframes lunge-l { 50% { transform: translateX(-60px) scale(1.08); } }
+.sprite.hit { animation: hit .5s steps(2); }
+@keyframes hit { 0%,50% { filter: brightness(3) saturate(0); transform: translateX(6px); } 25%,75% { filter: none; transform: translateX(-6px); } 100% { filter: none; transform: none; } }
+.sprite.dead { animation: none; opacity: .25; filter: grayscale(1); transform: translateY(16px) rotate(8deg); transition: all .8s steps(6); }
+.bolt { position: absolute; left: 22%; bottom: 70px; width: 30px; height: 30px; z-index: 3; opacity: 0; }
+.bolt img, .bolt svg { width: 100%; height: 100%; display: block; object-fit: contain; }
+.bolt.fly { animation: fly .45s steps(6) forwards; }
+@keyframes fly { 0% { opacity: 1; left: 22%; transform: rotate(0); } 90% { opacity: 1; } 100% { opacity: 0; left: 66%; transform: rotate(360deg); } }
+.dmg { position: absolute; z-index: 4; font-family: var(--pixel); font-size: .9rem; color: var(--neon-yellow); text-shadow: 2px 2px 0 var(--night); animation: rise 1s steps(8) forwards; pointer-events: none; }
+.dmg.hurt { color: var(--neon-red); }
+@keyframes rise { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-50px); opacity: 0; } }
+.flash { position: absolute; inset: 0; background: var(--neon-red); opacity: 0; pointer-events: none; z-index: 5; }
+.flash.on { animation: flash .4s steps(2); }
+@keyframes flash { 0%,50% { opacity: .35; } 100% { opacity: 0; } }
+.charge { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 3px solid var(--neon-teal); font-family: var(--pixel); font-size: .55rem; line-height: 1.5; color: var(--neon-pink); position: relative; z-index: 2; background: var(--night); }
+.charge .cbar { flex: 1; height: 14px; border: 2px solid var(--neon-pink); padding: 2px; min-width: 60px; }
+.charge .cbar i { display: block; height: 100%; width: 0; background: var(--neon-pink); }
+.charge.warn .cbar i { background: var(--neon-red); }
+.charge b { color: #fff; min-width: 2.5em; text-align: right; font-weight: 400; }
+.phase { position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%); font-family: var(--pixel); color: var(--neon-red); font-size: 1rem; text-shadow: 3px 3px 0 var(--night); z-index: 6; white-space: nowrap; animation: blink .5s steps(1) 4; }
+@keyframes blink { 50% { opacity: 0; } }
+.qbox { border: 3px solid #fff; border-radius: 6px; background: var(--night); padding: 14px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 0 0 3px var(--night-3); }
+.qtop { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.qtype { margin: 0; font-family: var(--pixel); font-size: .6rem; color: var(--neon-yellow); line-height: 1.6; }
+.bq { margin: 0; font-weight: 700; font-size: 1.02rem; }
+.qeq { background: var(--night-2); border: 2px dashed var(--night-3); border-radius: 6px; padding: 10px; font-weight: 700; font-size: 1rem; line-height: 1.7; }
+.qopts { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.qopt { display: flex; gap: 10px; align-items: center; text-align: left; border: 3px solid var(--neon-teal); background: var(--night-2); color: #fff; border-radius: 6px; padding: 10px 12px; font-weight: 700; font-size: 1.05rem; box-shadow: 0 4px 0 var(--neon-teal); line-height: 1.6; transition: transform .08s, box-shadow .08s; }
+.qopt:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 var(--neon-teal); }
+.qopt .k { flex: none; width: 30px; height: 30px; display: grid; place-items: center; font-family: var(--pixel); font-size: .7rem; background: var(--neon-teal); color: var(--night); }
+.qopt.right { border-color: var(--neon-green); box-shadow: 0 4px 0 var(--neon-green); background: #12351F; }
+.qopt.right .k { background: var(--neon-green); }
+.qopt.wrong { border-color: var(--neon-red); box-shadow: 0 4px 0 var(--neon-red); background: #3A1420; }
+.qopt.wrong .k { background: var(--neon-red); }
+.qopt:disabled { cursor: default; }
+.qopt:disabled:not(.right):not(.wrong) { opacity: .55; }
+.qfb { border: 3px solid var(--neon-yellow); border-radius: 6px; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: var(--night-2); }
+.qfb.no { border-color: var(--neon-red); }
+.qfb p { margin: 0; font-weight: 600; }
+.qfb .ans { color: var(--neon-green); font-weight: 800; }
+.qfb .work { color: #D6D1F0; font-size: .95rem; }
+.pbtn { font-family: var(--pixel); font-size: .72rem; line-height: 1.5; border: 3px solid var(--night); background: var(--neon-yellow); color: var(--night); padding: 14px 16px; box-shadow: 0 4px 0 var(--neon-orange); border-radius: 4px; }
+.pbtn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--neon-orange); }
+.pbtn.ghost { background: transparent; color: var(--neon-teal); border-color: var(--neon-teal); box-shadow: 0 4px 0 var(--neon-teal); }
+@media (min-width: 760px) {
+  .qopts { grid-template-columns: 1fr 1fr; }
+  .stage { height: 250px; }
+  .hero-sp { width: 110px; }
+  .mon-sp { width: 180px; }
+  .hero-sp.pic { width: 130px; height: 152px; }
+  .mon-sp.pic { width: 200px; height: 200px; }
+  .bhud { font-size: .72rem; }
+}
+.bend { margin: auto; text-align: center; display: flex; flex-direction: column; gap: 18px; align-items: center; color: #fff; padding: 24px 8px; }
+.bend h2 { font-family: var(--pixel); font-size: clamp(1.4rem, 7vw, 2.4rem); margin: 0; line-height: 1.3; color: var(--neon-yellow); text-shadow: 4px 4px 0 var(--neon-orange); }
+.bend.lose h2 { color: var(--neon-red); text-shadow: 4px 4px 0 var(--night-3); }
+.bend p { margin: 0; font-weight: 600; max-width: 36ch; }
+.bend .sprite { width: 120px; }
+.bend .sprite img { height: 140px; object-fit: contain; image-rendering: auto; }
+.bend .sprite.down { opacity: .35; filter: grayscale(1); transform: rotate(-90deg); }
+.bend-btns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.hits-left { color: #fff; }
+.start-blink { font-family: var(--pixel); font-size: .6rem; color: var(--neon-teal); animation: blink 1s steps(1) infinite; }
+
+/* ---------- calculator ---------- */
+.calc { position: fixed; right: 16px; bottom: 16px; width: 280px; z-index: 30; background: #fff; color: var(--ink); border: var(--b); border-radius: 18px; box-shadow: 6px 6px 0 var(--ink); padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+.calc-top { display: flex; align-items: center; justify-content: space-between; font-weight: 800; font-size: .9rem; }
+.calc-top button { border: 2.5px solid var(--ink); background: var(--pink); border-radius: 10px; width: 34px; height: 34px; font-weight: 800; box-shadow: 0 2px 0 var(--ink); padding: 0; }
+.calc-scr { border: 2.5px solid var(--ink); border-radius: 12px; background: var(--yellow-tint); padding: 6px 10px; text-align: right; min-height: 64px; display: flex; flex-direction: column; justify-content: flex-end; }
+.calc-scr .ex { font-size: .9rem; font-weight: 600; color: var(--muted); word-break: break-all; min-height: 1.4em; line-height: 1.4; }
+.calc-scr .rs { font-size: 1.5rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.2; word-break: break-all; }
+.calc-keys { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.calc-keys button { border: 2.5px solid var(--ink); background: #fff; border-radius: 10px; height: 42px; font-weight: 800; font-size: 1rem; box-shadow: 0 3px 0 var(--ink); padding: 0; }
+.calc-keys button:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+.calc-keys .opk { background: var(--teal-tint); }
+.calc-keys .eq { background: var(--orange); }
+.calc-keys .clr { background: var(--pink); }
+.calc-keys .sm { font-size: .78rem; }
+@media (max-width: 600px) {
+  .calc { left: 8px; right: 8px; bottom: 8px; width: auto; }
+  .calc-keys button { height: 40px; }
+}
+
+/* ---------- results ---------- */
+.results { display: grid; gap: 18px; grid-template-columns: 1fr; padding-block: 8px 20px; }
+.res-hero { background: var(--teal); color: #fff; padding: 22px; display: flex; gap: 18px; align-items: center; }
+.big-ring { --p: 0; width: 120px; height: 120px; flex: none; border-radius: 50%; border: var(--b); background: conic-gradient(var(--yellow) calc(var(--p) * 1%), #fff 0); display: grid; place-items: center; }
+.big-ring span { width: 88px; height: 88px; border-radius: 50%; background: #fff; color: var(--ink); border: var(--b); display: grid; place-items: center; font-weight: 800; font-size: 1.7rem; }
+.res-hero h2 { margin: 0 0 4px; font-size: 1.6rem; line-height: 1.15; font-weight: 800; text-wrap: balance; }
+.res-hero p { margin: 0; font-weight: 600; }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.stat { border: var(--b); border-radius: 14px; padding: 8px 10px; background: #fff; box-shadow: 0 4px 0 var(--ink); }
+.stat span { display: block; font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.stat b { font-size: 1.3rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.stat:nth-child(1) { background: var(--yellow-tint); } .stat:nth-child(2) { background: var(--pink-tint); } .stat:nth-child(3) { background: var(--teal-tint); } .stat:nth-child(4) { background: var(--orange-tint); }
+.panel { padding: 18px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.panel h3 { margin: 0; font-size: 1.15rem; font-weight: 800; }
+.bars { display: flex; flex-direction: column; gap: 8px; }
+.bar-row { display: grid; grid-template-columns: 10.5em 1fr 3.2em; gap: 10px; align-items: center; font-weight: 700; font-size: .92rem; }
+.bar { height: 14px; border: 2px solid var(--ink); border-radius: 99px; overflow: hidden; background: #fff; }
+.bar i { display: block; height: 100%; background: var(--teal); }
+.bar i.low { background: var(--orange); }
+.bar-row .n { text-align: right; font-variant-numeric: tabular-nums; }
+.weak { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.weak li { border: 2.5px solid var(--ink); border-radius: 14px; padding: 10px 12px; background: var(--orange-tint); }
+.weak li b { display: block; }
+.weak li span { font-size: .9rem; }
+.weak li.good { background: var(--good-tint); }
+.review { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.review li { border-bottom: 2px solid var(--line); padding: 6px 0 8px; font-size: .95rem; }
+.review li:last-child { border-bottom: 0; }
+.review .you { color: var(--bad); font-weight: 700; }
+.review .key { color: var(--good); font-weight: 800; }
+.review .tag { font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.send { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-weight: 700; padding: 12px 14px; border: 2.5px solid var(--ink); border-radius: 14px; background: var(--teal-tint); }
+.send.err { background: var(--orange-tint); }
+.res-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.res-actions .btn { flex: 1 1 200px; }
+@media (min-width: 760px) {
+  .results { grid-template-columns: 1fr 1fr; align-items: start; }
+  .results .span { grid-column: 1 / -1; }
+}
+@media (max-width: 480px) {
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .res-hero { flex-direction: column; text-align: center; }
+  .bar-row { grid-template-columns: 8.6em 1fr 3em; font-size: .85rem; }
+}
+footer { text-align: center; color: var(--muted); font-size: .82rem; padding: 14px 16px 20px; }
+footer a { color: var(--teal-ink); font-weight: 700; }
+canvas#confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+</style>
+</head>
+<body>
+
+<audio id="music" loop preload="none" src="Pixel%20Battle%202.mp3"></audio>
+
+<header class="topbar">
+  <a class="brand" href="https://scienceiskhool.github.io/scienceiskhool/" target="_blank" rel="noopener">
+    <img src="https://scienceiskhool.github.io/scienceiskhool/assets/img/head.png" alt="" onerror="this.style.visibility='hidden'">
+    <span><b>Mole Mayhem</b><small>Science is Khool · The mole concept</small></span>
+  </a>
+  <button class="icon-btn" id="btn-quit" type="button" aria-label="Back to start" title="Back to start" hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/></svg>
+  </button>
+  <button class="icon-btn" id="btn-music" type="button" aria-label="Music on" title="Music">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+  </button>
+  <button class="icon-btn" id="btn-sound" type="button" aria-label="Sound effects on" title="Sound effects">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg>
+  </button>
+</header>
+
+<main class="wrap">
+
+  <!-- START -->
+  <section id="scr-start" class="start">
+    <div class="card hero">
+      <img class="cast" src="mole.png" alt="" onerror="this.remove()">
+      <span class="pill">Sec 3–4 Chemistry · The mole concept</span>
+      <h1>Mole <em>Mayhem</em></h1>
+      <p>The Mole Scientist has stolen your research and fled to the top of his lair. Climb the right ladders, dodge his barrels, then beat him in a mole-calculation showdown.</p>
+      <div class="demo" aria-label="Example">
+        <small>Example climb</small>
+        <div class="mmap"><span class="q">8.80 g CO<span class="sub">2</span></span><span class="op">÷ 44 →</span><span class="q mol">0.200 mol</span><span class="op">× 24 →</span><span class="q">4.80 dm<sup>3</sup></span></div>
+      </div>
+      <div class="modes">
+        <div class="mode-card"><b>The climb</b><span>3 levels, 3 floors each. Only one ladder per floor holds. The rest snap!</span></div>
+        <div class="mode-card dark"><b>BOSS FIGHT</b><span>3 hearts. Land 6 hits (8 for Pure Chemistry) before the Mole Scientist knocks you out.</span></div>
+      </div>
+    </div>
+
+    <form class="card form" id="form-start" novalidate>
+      <h2>Ready, scientist?</h2>
+      <div class="grp">
+        <span id="lbl-course">Course</span>
+        <div class="seg" role="group" aria-labelledby="lbl-course">
+          <button type="button" class="chip" id="lv-easy" data-lv="easy" aria-pressed="true">Combined Science<small>Moles, gases, solutions</small></button>
+          <button type="button" class="chip" id="lv-hard" data-lv="hard" aria-pressed="false">Pure Chemistry<small>Adds % yield, % purity</small></button>
+        </div>
+      </div>
+      <div class="fields">
+        <label class="f full" for="in-name">Name<input id="in-name" name="name" maxlength="60" autocomplete="name" required></label>
+        <label class="f" for="in-cls">Class<select id="in-cls" name="cls" required><option value="">Choose…</option></select></label>
+        <label class="f" for="in-reg">Register no.<input id="in-reg" name="reg" inputmode="numeric" pattern="[0-9]*" maxlength="2" required></label>
+      </div>
+      <p class="form-err" id="form-err" role="alert"></p>
+      <button class="btn big" type="button" id="btn-go">Start the climb ▶</button>
+      <ul class="how">
+        <li>Phone or iPad: use the ◀ ▶ ▲ ▼ and JUMP buttons.</li>
+        <li>Laptop: arrow keys (or WASD) to move and climb, Space to jump.</li>
+        <li>Data: A<span class="sub">r</span> from the Periodic Table, 1 mol of gas = 24 dm<sup>3</sup> at r.t.p., L = 6.02 × 10<sup>23</sup>.</li>
+      </ul>
+      <div class="best"><span>Your best on this device</span><b id="txt-best">–</b></div>
+    </form>
+  </section>
+
+  <!-- CLIMB -->
+  <section id="scr-climb" class="climb" hidden>
+    <div class="chud" id="c-hud">
+      <div class="lv" id="c-lv">LEVEL 1<span>FLOOR 1/3</span></div>
+      <div class="hearts" id="c-hearts"></div>
+      <div class="pts"><small>POINTS</small><span id="c-pts">0</span></div>
+      <button class="calc-btn" type="button" id="c-calc" aria-pressed="false" aria-label="Calculator"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="5" y="2.5" width="14" height="19" rx="2"/><path d="M8 7h8M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 16h.01M12 16h.01M15.5 16h.01"/></svg>CALC</button>
+    </div>
+    <div class="qstrip" id="c-q" aria-live="polite"></div>
+    <div class="cwrap" id="c-wrap">
+      <canvas id="cv" width="400" height="560" aria-label="Game: climb the lair"></canvas>
+      <div class="toast" id="c-toast" hidden></div>
+      <div class="paused" id="c-paused" hidden>PAUSED · CALCULATOR OPEN</div>
+      <div class="cover" id="c-cover" hidden></div>
+    </div>
+    <p class="rotate">Turn your phone upright for a bigger view.</p>
+    <div class="pad" id="pad">
+      <button type="button" data-k="l" aria-label="Left">◀</button>
+      <button type="button" data-k="r" aria-label="Right">▶</button>
+      <button type="button" data-k="u" aria-label="Climb up">▲</button>
+      <button type="button" data-k="d" aria-label="Climb down">▼</button>
+      <button type="button" data-k="j" class="jump" aria-label="Jump">JUMP</button>
+    </div>
+    <p class="keys"><kbd>←</kbd> <kbd>→</kbd> move · <kbd>↑</kbd> <kbd>↓</kbd> climb · <kbd>SPACE</kbd> jump · <kbd>C</kbd> calculator</p>
+  </section>
+
+  <!-- BOSS -->
+  <section id="scr-boss" class="boss" hidden>
+    <div class="arena">
+      <div class="stars"></div>
+      <div class="bhud">
+        <div class="hp-who"><span class="hname">HERO</span><div class="hearts" id="b-hearts"></div></div>
+        <div class="hp-who boss-side"><span class="bname"><span id="b-name">MOLE SCIENTIST</span> <span class="hits-left" id="b-left"></span></span><div class="hpbar"><i id="b-hp"></i></div></div>
+      </div>
+      <div class="stage" id="b-stage">
+        <div class="sprite hero-sp" id="b-hero"></div>
+        <div class="bolt" id="b-bolt"></div>
+        <div class="sprite mon-sp" id="b-mon"></div>
+        <div class="flash" id="b-flash"></div>
+      </div>
+      <div class="charge" id="b-charge"><span id="b-charge-lbl">THE MOLE IS CHARGING</span><div class="cbar"><i id="b-cbar"></i></div><b id="b-secs">60</b></div>
+    </div>
+    <div class="qbox">
+      <div class="qtop"><p class="qtype" id="b-qtype">INCOMING ATTACK</p><button class="calc-btn" type="button" id="b-calc" aria-pressed="false" aria-label="Calculator"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="5" y="2.5" width="14" height="19" rx="2"/><path d="M8 7h8M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 16h.01M12 16h.01M15.5 16h.01"/></svg>CALC</button></div>
+      <div class="qeq" id="b-qeq" hidden></div>
+      <p class="bq" id="b-qtext"></p>
+      <div class="qopts" id="b-opts"></div>
+      <div class="qfb" id="b-fb" hidden aria-live="polite"><p id="b-fb-msg"></p><button class="pbtn" type="button" id="b-next">NEXT ▶</button></div>
+    </div>
+  </section>
+
+  <section id="scr-bend" class="bend" hidden>
+    <h2 id="be-title">VICTORY!</h2>
+    <div class="sprite" id="be-sprite"></div>
+    <p id="be-msg"></p>
+    <span class="start-blink">PRESS BUTTON TO CONTINUE</span>
+    <div class="bend-btns">
+      <button class="pbtn" type="button" id="be-retry" hidden>TRY AGAIN ↻</button>
+      <button class="pbtn" type="button" id="be-go">SEE RESULTS ▶</button>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="scr-result" class="results" hidden>
+    <div class="card res-hero span">
+      <div class="big-ring" id="res-ring"><span id="res-pct">0%</span></div>
+      <div><h2 id="res-title">Nice work!</h2><p id="res-sub"></p></div>
+    </div>
+    <div class="stats span">
+      <div class="stat"><span>Score</span><b id="res-correct">0</b></div>
+      <div class="stat"><span>Accuracy</span><b id="res-acc">0%</b></div>
+      <div class="stat"><span>Time</span><b id="res-time">0:00</b></div>
+      <div class="stat"><span>Points</span><b id="res-points">0</b></div>
+    </div>
+    <div class="card panel">
+      <h3>Conversions</h3>
+      <div class="bars" id="res-bars"></div>
+      <h3>Work on these</h3>
+      <ul class="weak" id="res-weak"></ul>
+    </div>
+    <div class="card panel">
+      <h3>Review</h3>
+      <ul class="review" id="res-review"></ul>
+    </div>
+    <div class="send span" id="send" aria-live="polite"><span id="send-msg">Sending your results…</span><button class="btn alt sm" id="btn-resend" type="button" hidden>Try again</button></div>
+    <div class="res-actions span">
+      <button class="btn big" id="btn-again" type="button">Climb again ↻</button>
+      <button class="btn big alt" id="btn-home" type="button">Change settings</button>
+    </div>
+  </section>
+</main>
+
+<div class="calc" id="calc" hidden role="dialog" aria-label="Calculator">
+  <div class="calc-top"><span>Calculator</span><button type="button" id="calc-x" aria-label="Close calculator">✕</button></div>
+  <div class="calc-scr"><div class="ex" id="calc-ex"></div><div class="rs" id="calc-rs">0</div></div>
+  <div class="calc-keys" id="calc-keys">
+    <button type="button" data-c="7">7</button><button type="button" data-c="8">8</button><button type="button" data-c="9">9</button><button type="button" class="opk" data-c="÷">÷</button><button type="button" class="clr" data-c="AC">AC</button>
+    <button type="button" data-c="4">4</button><button type="button" data-c="5">5</button><button type="button" data-c="6">6</button><button type="button" class="opk" data-c="×">×</button><button type="button" class="clr" data-c="DEL">⌫</button>
+    <button type="button" data-c="1">1</button><button type="button" data-c="2">2</button><button type="button" data-c="3">3</button><button type="button" class="opk" data-c="−">−</button><button type="button" class="opk" data-c="(">(</button>
+    <button type="button" data-c="0">0</button><button type="button" data-c=".">.</button><button type="button" class="opk sm" data-c="×10^">×10ˣ</button><button type="button" class="opk" data-c="+">+</button><button type="button" class="opk" data-c=")">)</button>
+    <button type="button" class="opk sm" data-c="ANS">Ans</button><button type="button" class="opk sm" data-c="^">xʸ</button><button type="button" class="opk sm" data-c="−n">(−)</button><button type="button" class="eq" data-c="=" style="grid-column: span 2">=</button>
+  </div>
+</div>
+
+<footer>Made for <a href="https://www.instagram.com/scienceiskhool/" target="_blank" rel="noopener">@scienceiskhool</a></footer>
+<canvas id="confetti" hidden></canvas>
+<script>
+(function () {
+"use strict";
+
+/* =================== SETTINGS (safe to edit) =================== */
+var SUBMIT_URL = "https://script.google.com/macros/s/AKfycbxCTjRCQzLlWXmmY-5R0p75WCmeFLzC9ZM3gNbGRXpcc_d9qHMXdyCn12B4dHpnrBWe/exec";
+var SHEET_TAB = "Mole Mayhem";        // tab name in your Google Sheet
+var BOSS_NAME = "MOLE SCIENTIST";
+var MUSIC_VOLUME = 0.25;              // music volume, 0 to 1 (file: Pixel Battle 2.mp3 in the same folder)
+var HITS_TO_WIN = { easy: 6, hard: 8 };   // boss hits needed (easy = Combined Science, hard = Pure Chemistry)
+var BOSS_SECS = { easy: 75, hard: 60 };   // seconds before the Mole attacks (calculations take longer than Ionic Quest)
+var CRIT_SECS = 25;                       // answering within this many seconds is a critical hit (bonus points only)
+var HEARTS = 3;                           // hearts in each climb level and in the boss fight
+var BARREL_GAP = [3.6, 3.0, 2.5];         // seconds between barrels on levels 1, 2, 3
+var BARREL_SPEED = [70, 85, 100];         // barrel roll speed on levels 1, 2, 3
+var HURT_MS = 2000;                       // boss fight: how long the hurt images show
+var IMG = {                               // sprite files (same folder). Missing files fall back to pixel art.
+  hero: "hero.png", heroHurt: "hero%20hurt.png", heroClimb: "hero%20climb.png",
+  mole: "mole.png", moleHurt: "mole%20hurt.png", moleThrow: "mole%20throw.png", moleSide: "mole%20side.png",
+  barrel: "barrel.png", barrelUp: "barrel%20upright.png"
+};
+var AR = { H: 1, C: 12, N: 14, O: 16, Na: 23, Mg: 24, Al: 27, S: 32, Cl: 35.5, K: 39, Ca: 40, Fe: 56, Cu: 64, Zn: 65 };
+var VM = 24;            // dm3 per mole of gas at r.t.p.
+var LA = 6.02e23;       // Avogadro constant
+var CLASSES = [];
+["S1", "S2", "S3", "S4"].forEach(function (l) {
+  ["Charity", "Courage", "Faith", "Hope", "Humility", "Integrity", "Love", "Respect", "Joy"].forEach(function (v) { CLASSES.push(l + " " + v); });
+});
+CLASSES.push("S5 Faith", "Other");
+
+/* =================== HELPERS =================== */
+function $(id) { return document.getElementById(id); }
+function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+function store(k, v) { try { localStorage.setItem("molemayhem_" + k, JSON.stringify(v)); } catch (e) {} }
+function load(k, d) { try { var v = localStorage.getItem("molemayhem_" + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } }
+function fmtTime(s) { s = Math.round(s); return Math.floor(s / 60) + ":" + ("0" + s % 60).slice(-2); }
+function stripTags(h) { var d = document.createElement("div"); d.innerHTML = h; return d.textContent; }
+
+/* =================== CHEMISTRY =================== */
+// formula → HTML with subscripts
+function fx(f) { return esc(f).replace(/([A-Za-z\)])(\d+)/g, '$1<span class="sub">$2</span>'); }
+// formula → plain text with unicode subscripts (for the canvas and the Sheet)
+var SUBS = "₀₁₂₃₄₅₆₇₈₉", SUPS = { "0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴", "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹", "-": "⁻" };
+function fxt(f) { return f.replace(/([A-Za-z\)])(\d+)/g, function (m, a, d) { return a + d.split("").map(function (x) { return SUBS[+x]; }).join(""); }); }
+function supStr(n) { return String(n).split("").map(function (c) { return SUPS[c] || c; }).join(""); }
+function parseF(f) {
+  var i = 0;
+  function group() {
+    var out = {};
+    while (i < f.length && f[i] !== ")") {
+      var part;
+      if (f[i] === "(") { i++; part = group(); i++; }
+      else { var m = /^[A-Z][a-z]?/.exec(f.slice(i)); part = {}; part[m[0]] = 1; i += m[0].length; }
+      var n = /^\d+/.exec(f.slice(i)), k = n ? +n[0] : 1; if (n) i += n[0].length;
+      for (var e in part) out[e] = (out[e] || 0) + part[e] * k;
+    }
+    return out;
+  }
+  return group();
+}
+function r1(x) { return Math.round(x * 10) / 10; }
+function mrOf(f) { var c = parseF(f), s = 0; for (var e in c) s += AR[e] * c[e]; return r1(s); }
+function atomsIn(f) { var c = parseF(f), s = 0; for (var e in c) s += c[e]; return s; }
+function arHint(fs) {
+  var seen = {}, out = [];
+  fs.forEach(function (f) { Object.keys(parseF(f)).forEach(function (e) { if (!seen[e]) { seen[e] = 1; out.push(e); } }); });
+  return "A<span class=\"sub\">r</span>: " + out.map(function (e) { return e + " = " + AR[e]; }).join(", ");
+}
+// typical wrong Mr values for a formula
+function wrongMrs(f) {
+  var c = parseF(f), right = mrOf(f), out = [];
+  var once = 0; for (var e in c) once += AR[e];                       // ignored the little numbers
+  out.push(r1(once));
+  if (f.indexOf("(") > -1) out.push(mrOf(f.replace(/[()]/g, "")));   // only multiplied the last atom in brackets
+  var els = Object.keys(c).sort(function (a, b) { return c[b] - c[a]; });
+  if (c[els[0]] > 1) out.push(r1(right - AR[els[0]]));                // one atom short
+  out.push(r1(right + AR[els[els.length - 1] === "H" && els.length > 1 ? els[0] : els[els.length - 1]])); // one atom extra
+  out.push(r1(right * 2));
+  return out.filter(function (v, i) { return v > 0 && v !== right && out.indexOf(v) === i; });
+}
+// numbers: 3 significant figures, scientific form for very big or small values
+function sf(x, n) {
+  n = n || 3;
+  if (!isFinite(x)) return "?";
+  if (x === 0) return "0";
+  var a = Math.abs(x);
+  if (a >= 1e5 || a < 1e-3) {
+    var e = Math.floor(Math.log10(a)), m = x / Math.pow(10, e), ms = m.toPrecision(n);
+    if (Math.abs(+ms) >= 10) { e++; ms = (x / Math.pow(10, e)).toPrecision(n); }
+    return ms + " × 10" + supStr(e);
+  }
+  var s = x.toPrecision(n);
+  if (s.indexOf("e") > -1) s = String(Math.round(+s));
+  return s;
+}
+// given data: 3 s.f. unless that would change the number
+function gv(x) { var three = +x.toPrecision(3); return Math.abs(three - x) <= Math.abs(x) * 1e-9 ? sf(x, 3) : sf(x, 4); }
+function num(x, unit) { return sf(x) + (unit ? " " + unit : ""); }
+var LTXT = "6.02 × 10²³";
+
+// error categories (what went wrong) and conversion types (what was being converted)
+var ERR = {
+  inv:      { label: "× instead of ÷ (or the reverse)", tip: "moles = mass ÷ Mr, volume = moles × 24, particles = moles × 6.02 × 10²³." },
+  mr:       { label: "Wrong Mr", tip: "Add Ar × the number of each atom. Everything inside brackets is multiplied by the number outside." },
+  konst:    { label: "Using the wrong constant", tip: "Mass goes with Mr. Gas volume goes with 24 dm³. Particles go with 6.02 × 10²³." },
+  v224:     { label: "Using 22.4 instead of 24", tip: "In O-level, 1 mol of any gas takes up 24 dm³ at r.t.p. 22.4 dm³ is for s.t.p." },
+  unit:     { label: "cm³ ↔ dm³ slip", tip: "1 dm³ = 1000 cm³. Divide cm³ by 1000 before using 24 dm³ or mol/dm³." },
+  ratio:    { label: "Ignoring the mole ratio", tip: "Use the big numbers in the equation: mol of B = mol of A × (B's number ÷ A's number)." },
+  ratioinv: { label: "Mole ratio upside down", tip: "Write the ratio as 'wanted ÷ given', using the coefficients from the equation." },
+  atoms:    { label: "Molecules vs atoms", tip: "Molecules = moles × 6.02 × 10²³. Atoms = molecules × atoms in one molecule." },
+  limit:    { label: "Using the reactant in excess", tip: "Find moles of both reactants and use the ratio. The one that runs out first decides how much product forms." },
+  pctinv:   { label: "Percentage upside down", tip: "% yield = actual ÷ theoretical × 100. % purity = mass of pure substance ÷ mass of sample × 100." },
+  masscmp:  { label: "Comparing masses of different substances", tip: "Change to moles first, use the ratio, then change back to mass." },
+  timeout:  { label: "Running out of time", tip: "Write the mole map in your head: mass ⇄ moles ⇄ volume, then go one step at a time." }
+};
+var TYPES = {
+  mr: "Mr", m2n: "Mass → moles", n2m: "Moles → mass", n2v: "Moles → gas volume", v2n: "Gas volume → moles",
+  np: "Moles ↔ particles", conc: "Concentration", ratio: "Mole ratio", limit: "Limiting reactant", yield: "% yield", purity: "% purity"
+};
+var WHY = {
+  inv: "Wrong way round! That multiplies where you should divide (or the reverse).",
+  mr: "Check the Mr. Add up Ar × number of each atom.",
+  konst: "Wrong constant. Mass ⇄ moles uses Mr. Gas volume uses 24. Particles use 6.02 × 10²³.",
+  v224: "22.4 dm³ is for s.t.p. At r.t.p. one mole of gas is 24 dm³.",
+  unit: "Unit slip! 1 dm³ = 1000 cm³.",
+  ratio: "Check the mole ratio in the equation.",
+  ratioinv: "The mole ratio is upside down.",
+  atoms: "Molecules and atoms are not the same count.",
+  limit: "That reactant is in excess. Use the one that runs out.",
+  pctinv: "Upside down! It should be (part ÷ whole) × 100.",
+  masscmp: "You can't compare masses of different substances directly. Use moles."
+};
+
+// species and reactions
+var GASES = ["CO2", "O2", "N2", "NH3", "CH4", "SO2", "Cl2", "H2"];
+var MOLEC = GASES.concat(["H2O"]);
+var SOLUTES = ["NaOH", "KOH", "NaCl", "Na2CO3", "CuSO4", "MgSO4"];
+var BRACKETS = ["Ca(OH)2", "Mg(OH)2", "(NH4)2SO4", "Ca(NO3)2", "Cu(NO3)2", "Al2(SO4)3", "Fe(OH)3", "Mg(NO3)2"];
+var NMOL = [0.05, 0.1, 0.125, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.75, 1.5, 2];
+var RX = [
+  { id: "caco3",  L: [[1, "CaCO3", "s"], [2, "HCl", "aq"]],   R: [[1, "CaCl2", "aq"], [1, "H2O", "l"], [1, "CO2", "g"]] },
+  { id: "mghcl",  L: [[1, "Mg", "s"], [2, "HCl", "aq"]],      R: [[1, "MgCl2", "aq"], [1, "H2", "g"]] },
+  { id: "zn",     L: [[1, "Zn", "s"], [1, "H2SO4", "aq"]],    R: [[1, "ZnSO4", "aq"], [1, "H2", "g"]] },
+  { id: "mgo",    L: [[2, "Mg", "s"], [1, "O2", "g"]],        R: [[2, "MgO", "s"]] },
+  { id: "na2co3", L: [[1, "Na2CO3", "s"], [2, "HCl", "aq"]],  R: [[2, "NaCl", "aq"], [1, "H2O", "l"], [1, "CO2", "g"]] },
+  { id: "al",     L: [[2, "Al", "s"], [6, "HCl", "aq"]],      R: [[2, "AlCl3", "aq"], [3, "H2", "g"]] },
+  { id: "cuco3",  L: [[1, "CuCO3", "s"]],                      R: [[1, "CuO", "s"], [1, "CO2", "g"]] },
+  { id: "fe2o3",  L: [[1, "Fe2O3", "s"], [3, "CO", "g"]],     R: [[2, "Fe", "s"], [3, "CO2", "g"]] },
+  { id: "cuo",    L: [[1, "CuO", "s"], [1, "H2SO4", "aq"]],   R: [[1, "CuSO4", "aq"], [1, "H2O", "l"]] },
+  { id: "mgco3",  L: [[1, "MgCO3", "s"], [1, "H2SO4", "aq"]], R: [[1, "MgSO4", "aq"], [1, "H2O", "l"], [1, "CO2", "g"]] },
+  { id: "kclo3",  L: [[2, "KClO3", "s"]],                      R: [[2, "KCl", "s"], [3, "O2", "g"]] }
+];
+var TIT = [ // titrations: alkali + acid
+  { alk: "NaOH", acid: "HCl", a: 1, b: 1, eq: "NaOH + HCl → NaCl + H2O" },
+  { alk: "KOH", acid: "HCl", a: 1, b: 1, eq: "KOH + HCl → KCl + H2O" },
+  { alk: "NaOH", acid: "H2SO4", a: 2, b: 1, eq: "2NaOH + H2SO4 → Na2SO4 + 2H2O" },
+  { alk: "KOH", acid: "H2SO4", a: 2, b: 1, eq: "2KOH + H2SO4 → K2SO4 + 2H2O" },
+  { alk: "Na2CO3", acid: "HCl", a: 1, b: 2, eq: "Na2CO3 + 2HCl → 2NaCl + H2O + CO2" }
+];
+function sp(rx, f) { var all = rx.L.concat(rx.R); for (var i = 0; i < all.length; i++) if (all[i][1] === f) return { c: all[i][0], f: f, s: all[i][2], side: rx.L.indexOf(all[i]) > -1 ? "L" : "R" }; return null; }
+function eqHTML(rx) {
+  function side(a) { return a.map(function (x) { return (x[0] > 1 ? x[0] : "") + fx(x[1]) + '<span class="st">(' + x[2] + ")</span>"; }).join(" + "); }
+  return side(rx.L) + " → " + side(rx.R);
+}
+function eqText(rx) { function side(a) { return a.map(function (x) { return (x[0] > 1 ? x[0] : "") + fxt(x[1]); }).join(" + "); } return side(rx.L) + " → " + side(rx.R); }
+function eqStrHTML(s) { return s.split(" ").map(function (t) { var m = /^(\d*)([A-Z].*)$/.exec(t); return m ? m[1] + fx(m[2]) : esc(t); }).join(" "); }
+function rxWith(test) { return RX.filter(test); }
+function solidR(rx) { return rx.L.filter(function (x) { return x[2] === "s"; }).map(function (x) { return x[1]; }); }
+function gasP(rx) { return rx.R.filter(function (x) { return x[2] === "g"; }).map(function (x) { return x[1]; }); }
+function acidL(rx) { return rx.L.filter(function (x) { return x[1] === "HCl" || x[1] === "H2SO4"; }).map(function (x) { return x[1]; }); }
+function massP(rx) { return rx.R.filter(function (x) { return x[1] !== "H2O" && x[2] !== "g"; }).map(function (x) { return x[1]; }); }
+function nFor(f, maxMass) { var ok = [0.05, 0.1, 0.15, 0.2, 0.25].filter(function (n) { var m = n * mrOf(f); return m <= (maxMass || 30) && Math.abs(+m.toPrecision(3) - m) < 1e-9; });
+  if (!ok.length) ok = [0.05, 0.1, 0.15, 0.2, 0.25].filter(function (n) { var m = n * mrOf(f); return m <= (maxMass || 30) && Math.abs(+m.toPrecision(4) - m) < 1e-9; }); return pick(ok.length ? ok : [0.05]); }
+
+/* ---------- options: one right answer + wrong ones built from typical errors ---------- */
+// wrongs: [{v, err}] numeric; returns [{t, ok, err}] with unique text
+function buildOpts(right, unit, wrongs, nWrong, fmt) {
+  fmt = fmt || function (v) { return num(v, unit); };
+  var rt = fmt(right), out = [{ t: rt, ok: true, err: null }], seen = {}; seen[rt] = 1;
+  shuffle(wrongs).forEach(function (w) { if (out.length > nWrong) return; var t = fmt(w.v); if (!seen[t] && isFinite(w.v) && w.v > 0) { seen[t] = 1; out.push({ t: t, ok: false, err: w.err }); } });
+  [[10, "unit"], [0.1, "unit"], [2, "ratio"], [0.5, "ratio"], [1000, "unit"], [0.001, "unit"]].forEach(function (k) {
+    if (out.length > nWrong) return; var t = fmt(right * k[0]); if (!seen[t]) { seen[t] = 1; out.push({ t: t, ok: false, err: k[1] }); }
+  });
+  return shuffle(out);
+}
+function opLabels(list) { return shuffle(list.map(function (x) { return { t: x[0], ok: !!x[1], err: x[1] ? null : x[2] }; })); }
+
+/* ---------- climb steps ---------- */
+// each returns { type, q (HTML), from (crumb text), labels [{t, ok, err}], out (number for next step), outText, work }
+var STEP = {
+  mr: function (f) {
+    var M = mrOf(f);
+    return { type: "mr", q: "First, the M<span class=\"sub\">r</span> of <b>" + fx(f) + "</b>. Which ladder is right?", hint: arHint([f]),
+      labels: buildOpts(M, "", wrongMrs(f).map(function (v) { return { v: v, err: "mr" }; }), 2, function (v) { return "Mr = " + (Math.round(v * 10) / 10); }),
+      out: M, outText: "Mr " + M, work: "Mr of " + fxt(f) + " = " + M };
+  },
+  m2n: function (f, m, mode, ctx) {
+    var M = mrOf(f), n = m / M;
+    return { type: "m2n", q: (ctx || "You have <b>" + gv(m) + " g</b> of " + fx(f) + ".") + " How many <b>moles</b> is that?", hint: arHint([f]),
+      labels: mode === "op" ? opLabels([["÷ " + M, 1], ["× " + M, 0, "inv"], ["÷ 24", 0, "konst"]]) :
+        buildOpts(n, "mol", [{ v: m * M, err: "inv" }, { v: m / pick(wrongMrs(f)), err: "mr" }, { v: m / 24, err: "konst" }], 2),
+      out: n, outText: sf(n) + " mol", work: gv(m) + " g ÷ " + M + " = " + sf(n) + " mol" };
+  },
+  n2m: function (f, n, mode, ctx) {
+    var M = mrOf(f), m = n * M;
+    return { type: "n2m", q: (ctx || "You have <b>" + sf(n) + " mol</b> of " + fx(f) + ".") + " What is its <b>mass</b>?", hint: arHint([f]),
+      labels: mode === "op" ? opLabels([["× " + M, 1], ["÷ " + M, 0, "inv"], ["× 24", 0, "konst"]]) :
+        buildOpts(m, "g", [{ v: n / M, err: "inv" }, { v: n * pick(wrongMrs(f)), err: "mr" }, { v: n * 24, err: "konst" }], 2),
+      out: m, outText: sf(m) + " g", work: sf(n) + " mol × " + M + " = " + sf(m) + " g" };
+  },
+  n2v: function (f, n, mode, ctx) {
+    var v = n * VM;
+    return { type: "n2v", q: (ctx || "You have <b>" + sf(n) + " mol</b> of " + fx(f) + " gas.") + " What <b>volume</b> does it take up at r.t.p.?", hint: "1 mol of gas = 24 dm³ at r.t.p.",
+      labels: mode === "op" ? opLabels([["× 24", 1], ["÷ 24", 0, "inv"], ["× 22.4", 0, "v224"]]) :
+        buildOpts(v, "dm³", [{ v: n / VM, err: "inv" }, { v: n * 22.4, err: "v224" }, { v: n * 24000, err: "unit" }], 2),
+      out: n, outText: sf(v) + " dm³", work: sf(n) + " mol × 24 = " + sf(v) + " dm³" };
+  },
+  v2n: function (f, v, cm3, mode, ctx) { // v in dm3, or cm3 if cm3 = true
+    var n = cm3 ? v / 24000 : v / VM, vt = gv(v) + (cm3 ? " cm³" : " dm³");
+    return { type: "v2n", q: (ctx || "You have <b>" + vt + "</b> of " + fx(f) + " gas at r.t.p.") + " How many <b>moles</b> is that?", hint: "1 mol of gas = 24 dm³ = 24 000 cm³ at r.t.p.",
+      labels: mode === "op" ? (cm3 ? opLabels([["÷ 24 000", 1], ["÷ 24", 0, "unit"], ["× 24 000", 0, "inv"]]) : opLabels([["÷ 24", 1], ["× 24", 0, "inv"], ["÷ 22.4", 0, "v224"]])) :
+        buildOpts(n, "mol", cm3 ? [{ v: v / 24, err: "unit" }, { v: v / 22400, err: "v224" }, { v: v * 24 / 1000, err: "inv" }] : [{ v: v * 24, err: "inv" }, { v: v / 22.4, err: "v224" }, { v: v / 24000, err: "unit" }], 2),
+      out: n, outText: sf(n) + " mol", work: vt + (cm3 ? " ÷ 24 000" : " ÷ 24") + " = " + sf(n) + " mol" };
+  },
+  n2p: function (f, n, mode, ctx) {
+    var p = n * LA;
+    return { type: "np", q: (ctx || "You have <b>" + sf(n) + " mol</b> of " + fx(f) + ".") + " How many <b>molecules</b> is that?", hint: "L = 6.02 × 10²³ per mole",
+      labels: mode === "op" ? opLabels([["× " + LTXT, 1], ["÷ " + LTXT, 0, "inv"], ["× 24", 0, "konst"]]) :
+        buildOpts(p, "", [{ v: n / LA, err: "inv" }, { v: p * atomsIn(f), err: "atoms" }, { v: n * 24, err: "konst" }], 2),
+      out: n, outText: sf(p) + " molecules", work: sf(n) + " mol × " + LTXT + " = " + sf(p) + " molecules" };
+  },
+  p2n: function (f, p, mode, ctx) {
+    var n = p / LA;
+    return { type: "np", q: (ctx || "You have <b>" + gv(p) + "</b> molecules of " + fx(f) + ".") + " How many <b>moles</b> is that?", hint: "L = 6.02 × 10²³ per mole",
+      labels: mode === "op" ? opLabels([["÷ " + LTXT, 1], ["× " + LTXT, 0, "inv"], ["÷ 24", 0, "konst"]]) :
+        buildOpts(n, "mol", [{ v: p * LA, err: "inv" }, { v: n * atomsIn(f), err: "atoms" }, { v: p / 24, err: "konst" }], 2),
+      out: n, outText: sf(n) + " mol", work: gv(p) + " ÷ " + LTXT + " = " + sf(n) + " mol" };
+  },
+  conc: function (f, n, vcm3, ctx) {
+    var c = n / (vcm3 / 1000);
+    return { type: "conc", q: (ctx || "<b>" + sf(n) + " mol</b> of " + fx(f) + " is in <b>" + vcm3 + " cm³</b> of solution.") + " What is the <b>concentration in mol/dm³</b>?", hint: "Concentration = moles ÷ volume in dm³",
+      labels: buildOpts(c, "mol/dm³", [{ v: n / vcm3, err: "unit" }, { v: n * vcm3 / 1000, err: "inv" }, { v: c * mrOf(f), err: "konst" }], 2),
+      out: c, outText: sf(c) + " mol/dm³", work: sf(n) + " mol ÷ " + sf(vcm3 / 1000) + " dm³ = " + sf(c) + " mol/dm³" };
+  },
+  concg: function (f, c, ctx) {
+    var M = mrOf(f), g = c * M;
+    return { type: "conc", q: (ctx || "The solution is <b>" + sf(c) + " mol/dm³</b> " + fx(f) + ".") + " What is the concentration in <b>g/dm³</b>?", hint: arHint([f]),
+      labels: buildOpts(g, "g/dm³", [{ v: c / M, err: "inv" }, { v: c * pick(wrongMrs(f)), err: "mr" }, { v: c * 24, err: "konst" }], 2),
+      out: g, outText: sf(g) + " g/dm³", work: sf(c) + " mol/dm³ × " + M + " = " + sf(g) + " g/dm³" };
+  },
+  ratio: function (rx, A, B, nA) {
+    var a = sp(rx, A).c, b = sp(rx, B).c, nB = nA * b / a, givenMade = sp(rx, A).side === "R", made = sp(rx, B).side === "R";
+    var w = a !== b ? [{ v: nA, err: "ratio" }, { v: nA * a / b, err: "ratioinv" }, { v: nA * b, err: "ratio" }] : [{ v: nA * 2, err: "ratio" }, { v: nA / 2, err: "ratio" }];
+    var ask = givenMade ? "<b>" + sf(nA) + " mol</b> of " + fx(A) + " was made. How many <b>moles of " + fx(B) + "</b> " + (made ? "were made too" : "reacted") + "?" :
+      "<b>" + sf(nA) + " mol</b> of " + fx(A) + " reacts. How many <b>moles of " + fx(B) + "</b> " + (made ? "are made" : "react with it") + "?";
+    return { type: "ratio", q: ask,
+      hint: "Mole ratio " + fxt(A) + " : " + fxt(B) + " = " + a + " : " + b,
+      labels: buildOpts(nB, "mol", w, 2), out: nB, outText: sf(nB) + " mol " + fxt(B),
+      work: sf(nA) + " mol × " + b + "/" + a + " = " + sf(nB) + " mol " + fxt(B) };
+  },
+  volsoln: function (C, nC, conc) {
+    var vdm = nC / conc, v = vdm * 1000;
+    return { type: "conc", q: "The acid is <b>" + sf(conc) + " mol/dm³</b> " + fx(C) + ". What <b>volume</b> of it is needed for " + sf(nC) + " mol?", hint: "Volume (dm³) = moles ÷ concentration. Then × 1000 for cm³.",
+      labels: buildOpts(v, "cm³", [{ v: vdm, err: "unit" }, { v: conc / nC * 1000, err: "inv" }, { v: nC * conc * 1000, err: "inv" }], 2),
+      out: v, outText: sf(v) + " cm³", work: sf(nC) + " ÷ " + sf(conc) + " = " + sf(vdm) + " dm³ = " + sf(v) + " cm³" };
+  },
+  yield: function (rx, A, B, nB, actual, mA) {
+    var M = mrOf(B), theo = nB * M, y = actual / theo * 100;
+    var w = [{ v: theo / actual * 100, err: "pctinv" }, { v: actual / mA * 100, err: "masscmp" }, { v: actual / (nB * pick(wrongMrs(B))) * 100, err: "mr" }];
+    var a = sp(rx, A).c, b = sp(rx, B).c; if (a !== b) w.push({ v: actual / (nB * a / b * M) * 100, err: "ratio" });
+    return { type: "yield", q: "In theory " + sf(nB) + " mol of " + fx(B) + " forms, but only <b>" + gv(actual) + " g</b> is collected. What is the <b>% yield</b>?", hint: arHint([B]),
+      labels: buildOpts(y, "%", w, 2, function (v) { return sf(v) + " %"; }), out: y, outText: sf(y) + " %",
+      work: "theoretical = " + sf(nB) + " × " + M + " = " + gv(theo) + " g; " + gv(actual) + " ÷ " + gv(theo) + " × 100 = " + sf(y) + " %" };
+  },
+  purity: function (rx, A, nA, sample, B, nB) {
+    var M = mrOf(A), pure = nA * M, p = pure / sample * 100;
+    var w = [{ v: sample / pure * 100, err: "pctinv" }, { v: nA * pick(wrongMrs(A)) / sample * 100, err: "mr" }, { v: nB * 24 / 22.4 * (sp(rx, A).c / sp(rx, B).c) * M / sample * 100, err: "v224" }];
+    return { type: "purity", q: "So <b>" + sf(nA) + " mol</b> of " + fx(A) + " was in the <b>" + gv(sample) + " g</b> sample. What is the <b>% purity</b>?", hint: arHint([A]),
+      labels: buildOpts(p, "%", w, 2, function (v) { return sf(v) + " %"; }), out: p, outText: sf(p) + " %",
+      work: "pure mass = " + sf(nA) + " × " + M + " = " + gv(pure) + " g; " + gv(pure) + " ÷ " + gv(sample) + " × 100 = " + sf(p) + " %" };
+  }
+};
+
+// a level = 3 floors that carry on from each other
+function makeChain(level, lv) {
+  var f, n, steps, rx = null, start;
+  if (level === 1) {
+    var t = pick(["a", "b", "c", "d"]);
+    if (t === "a") { f = pick(GASES); n = pick(NMOL); start = gv(n * mrOf(f)) + " g " + fxt(f);
+      steps = [STEP.mr(f), STEP.m2n(f, n * mrOf(f), "op"), STEP.n2v(f, n, "op", "Now carry on: <b>" + sf(n) + " mol</b> of " + fx(f) + ".")]; }
+    else if (t === "b") { f = pick(MOLEC); n = pick([0.05, 0.1, 0.2, 0.25, 0.5, 1.5, 2]); start = gv(n * mrOf(f)) + " g " + fxt(f);
+      steps = [STEP.mr(f), STEP.m2n(f, n * mrOf(f), "op"), STEP.n2p(f, n, "op", "Now carry on: <b>" + sf(n) + " mol</b> of " + fx(f) + ".")]; }
+    else if (t === "c") { f = pick(GASES); n = pick(NMOL); start = gv(n * VM) + " dm³ " + fxt(f);
+      steps = [STEP.mr(f), STEP.v2n(f, n * VM, false, "op"), STEP.n2m(f, n, "op", "Now carry on: <b>" + sf(n) + " mol</b> of " + fx(f) + ".")]; }
+    else { f = pick(GASES); n = pick([0.05, 0.1, 0.125, 0.15, 0.2, 0.25]); start = gv(n * 24000) + " cm³ " + fxt(f);
+      steps = [STEP.mr(f), STEP.v2n(f, n * 24000, true, "op"), STEP.n2m(f, n, "op", "Now carry on: <b>" + sf(n) + " mol</b> of " + fx(f) + ".")]; }
+    steps[1].from = start;
+  } else if (level === 2) {
+    var t2 = pick(["a", "b", "b", "c", "d"]);
+    if (t2 === "a") { f = pick(GASES); n = pick(NMOL); var m = n * mrOf(f);
+      steps = [STEP.m2n(f, m, "res"), STEP.n2v(f, n, "res", "Carry on with your <b>" + sf(n) + " mol</b> of " + fx(f) + "."), STEP.n2p(f, n, "res", "Same <b>" + sf(n) + " mol</b> of " + fx(f) + ".")]; start = gv(m) + " g " + fxt(f); }
+    else if (t2 === "b") { f = pick(SOLUTES); n = pick([0.05, 0.1, 0.2, 0.25, 0.5]); var V = pick([100, 200, 250, 500]); var m2 = n * mrOf(f), c = n / (V / 1000);
+      steps = [STEP.m2n(f, m2, "res", "<b>" + gv(m2) + " g</b> of " + fx(f) + " is dissolved to make <b>" + V + " cm³</b> of solution."), STEP.conc(f, n, V), STEP.concg(f, c)]; start = gv(m2) + " g " + fxt(f) + " in " + V + " cm³"; }
+    else if (t2 === "c") { f = pick(GASES); n = pick([0.1, 0.5, 1.5, 2]); var p = n * LA;
+      steps = [STEP.p2n(f, p, "res"), STEP.n2m(f, n, "res", "Carry on with your <b>" + sf(n) + " mol</b> of " + fx(f) + "."), STEP.n2v(f, n, "res", "Same <b>" + sf(n) + " mol</b> of " + fx(f) + " gas.")]; start = gv(p) + " molecules " + fxt(f); }
+    else { f = pick(GASES); n = pick([0.05, 0.1, 0.125, 0.15, 0.2, 0.25]); var v3 = n * 24000;
+      steps = [STEP.v2n(f, v3, true, "res"), STEP.n2m(f, n, "res", "Carry on with your <b>" + sf(n) + " mol</b> of " + fx(f) + "."), STEP.n2p(f, n, "res", "Same <b>" + sf(n) + " mol</b> of " + fx(f) + ".")]; start = gv(v3) + " cm³ " + fxt(f); }
+  } else {
+    var pool = lv === "hard" ? ["a", "b", "c", "d", "d", "e", "e"] : ["a", "b", "c"];
+    var t3 = pick(pool), A, B, nA, nB, mA;
+    if (t3 === "a") { rx = pick(rxWith(function (r) { return solidR(r).length && gasP(r).length; })); A = solidR(rx)[0]; B = gasP(rx)[0]; nA = nFor(A); mA = nA * mrOf(A); nB = nA * sp(rx, B).c / sp(rx, A).c;
+      steps = [STEP.m2n(A, mA, "res", "<b>" + gv(mA) + " g</b> of " + fx(A) + " reacts completely."), STEP.ratio(rx, A, B, nA), STEP.n2v(B, nB, "res", "That makes <b>" + sf(nB) + " mol</b> of " + fx(B) + ".")]; }
+    else if (t3 === "b") { rx = pick(rxWith(function (r) { return solidR(r).length && acidL(r).length; })); A = solidR(rx)[0]; B = acidL(rx)[0]; nA = nFor(A); mA = nA * mrOf(A); nB = nA * sp(rx, B).c / sp(rx, A).c;
+      var cc = pick([0.5, 1, 2].filter(function (x) { var v = nB / x * 1000; return v >= 20 && v <= 600; }).concat([]));
+      if (!cc) cc = 1;
+      steps = [STEP.m2n(A, mA, "res", "<b>" + gv(mA) + " g</b> of " + fx(A) + " must be reacted with acid."), STEP.ratio(rx, A, B, nA), STEP.volsoln(B, nB, cc)]; }
+    else if (t3 === "c" || t3 === "d") { rx = pick(rxWith(function (r) { return solidR(r).length && massP(r).filter(function (x) { return solidR(r).indexOf(x) < 0; }).length; })); A = solidR(rx)[0]; B = massP(rx).filter(function (x) { return x !== A; })[0]; nA = nFor(A); mA = nA * mrOf(A); nB = nA * sp(rx, B).c / sp(rx, A).c;
+      if (t3 === "c") steps = [STEP.m2n(A, mA, "res", "<b>" + gv(mA) + " g</b> of " + fx(A) + " reacts completely."), STEP.ratio(rx, A, B, nA), STEP.n2m(B, nB, "res", "That makes <b>" + sf(nB) + " mol</b> of " + fx(B) + ".")];
+      else { var actual = +(nB * mrOf(B) * pick([0.6, 0.7, 0.75, 0.8, 0.85, 0.9])).toPrecision(3);
+        steps = [STEP.m2n(A, mA, "res", "<b>" + gv(mA) + " g</b> of " + fx(A) + " reacts completely."), STEP.ratio(rx, A, B, nA), STEP.yield(rx, A, B, nB, actual, mA)]; }
+    } else { rx = pick(rxWith(function (r) { return /CO3/.test(r.L[0][1]) && gasP(r).indexOf("CO2") > -1; })); A = rx.L[0][1]; B = "CO2"; nA = nFor(A); nB = nA;
+      mA = 0; var sample = +(nA * mrOf(A) / pick([0.6, 0.75, 0.8, 0.9])).toPrecision(3);
+      steps = [STEP.v2n(B, nB * VM, false, "res", "A <b>" + gv(sample) + " g</b> sample of impure " + fx(A) + " reacts with excess acid, giving <b>" + gv(nB * VM) + " dm³</b> of CO<span class=\"sub\">2</span> at r.t.p."),
+        STEP.ratio(rx, B, A, nB), STEP.purity(rx, A, nA, sample, B, nB)]; }
+    start = t3 === "e" ? gv(nB * VM) + " dm³ CO₂" : gv(mA) + " g " + fxt(A);
+  }
+  steps.forEach(function (s, i) { s.eq = rx; s.from = s.from || (i === 0 ? start : steps[i - 1].outText); });
+  return { steps: steps, rx: rx };
+}
+
+/* ---------- boss questions ---------- */
+// each returns { type, text (HTML), eq (HTML or ""), opts [{t, ok, err}], work, right }
+function Q(type, text, eq, right, unit, wrongs, work, fmt) { var o = buildOpts(right, unit, wrongs, 3, fmt); return { type: type, text: text, eq: eq || "", opts: o, work: work, right: fmt ? fmt(right) : num(right, unit) }; }
+var pct = function (v) { return sf(v) + " %"; };
+var BQ = {
+  m2n: function () { var f = pick(SOLUTES.concat(GASES, BRACKETS.slice(0, 4))), n = pick(NMOL), M = mrOf(f), m = n * M;
+    return Q("m2n", "How many moles are there in <b>" + gv(m) + " g</b> of " + fx(f) + "? <span class=\"st\">(" + arHint([f]) + ")</span>", "", n, "mol",
+      [{ v: m * M, err: "inv" }, { v: m / wrongMrs(f)[0], err: "mr" }, { v: m / pick(wrongMrs(f)), err: "mr" }, { v: m / 24, err: "konst" }], gv(m) + " ÷ " + M + " = " + sf(n) + " mol"); },
+  m2v: function () { var f = pick(GASES), n = pick(NMOL), M = mrOf(f), m = n * M, v = n * VM;
+    return Q("n2v", "What volume does <b>" + gv(m) + " g</b> of " + fx(f) + " gas occupy at r.t.p.? <span class=\"st\">(" + arHint([f]) + ")</span>", "", v, "dm³",
+      [{ v: n * 22.4, err: "v224" }, { v: m / wrongMrs(f)[0] * VM, err: "mr" }, { v: n / VM, err: "inv" }, { v: m * M / VM, err: "inv" }, { v: n * 24000, err: "unit" }],
+      "n = " + gv(m) + " ÷ " + M + " = " + sf(n) + " mol; V = " + sf(n) + " × 24 = " + sf(v) + " dm³"); },
+  v2m: function () { var f = pick(GASES), n = pick([0.025, 0.05, 0.1, 0.125, 0.15, 0.2, 0.25]), M = mrOf(f), v = n * 24000, m = n * M;
+    return Q("v2n", "What is the mass of <b>" + gv(v) + " cm³</b> of " + fx(f) + " gas at r.t.p.? <span class=\"st\">(" + arHint([f]) + ")</span>", "", m, "g",
+      [{ v: v / 24 * M, err: "unit" }, { v: v / 22400 * M, err: "v224" }, { v: n * wrongMrs(f)[0], err: "mr" }, { v: n / M, err: "inv" }],
+      "n = " + gv(v) + " ÷ 24 000 = " + sf(n) + " mol; mass = " + sf(n) + " × " + M + " = " + sf(m) + " g"); },
+  part: function () { var f = pick(["CO2", "H2O", "NH3", "CH4", "SO2", "O2"]), n = pick([0.1, 0.2, 0.25, 0.5, 2]), M = mrOf(f), m = n * M, k = atomsIn(f), atoms = Math.random() < .45;
+    var ans = n * LA * (atoms ? k : 1);
+    return Q("np", "How many <b>" + (atoms ? "atoms" : "molecules") + "</b> are there in <b>" + gv(m) + " g</b> of " + fx(f) + "? <span class=\"st\">(" + arHint([f]) + ", L = 6.02 × 10²³)</span>", "", ans, "",
+      [{ v: atoms ? n * LA : n * LA * k, err: "atoms" }, { v: n / LA, err: "inv" }, { v: m * LA, err: "konst" }, { v: m / wrongMrs(f)[0] * LA * (atoms ? k : 1), err: "mr" }],
+      "n = " + gv(m) + " ÷ " + M + " = " + sf(n) + " mol; molecules = " + sf(n) + " × " + LTXT + " = " + sf(n * LA) + (atoms ? "; atoms = × " + k + " = " + sf(ans) : "")); },
+  rmass: function () { var rx = pick(rxWith(function (r) { return solidR(r).length && massP(r).filter(function (x) { return solidR(r).indexOf(x) < 0; }).length; }));
+    var A = solidR(rx)[0], Bs = massP(rx).filter(function (x) { return x !== A; }).concat(rx.L.filter(function (x) { return x[2] === "g" && x[1] !== "CO"; }).map(function (x) { return x[1]; })), B = pick(Bs);
+    var a = sp(rx, A).c, b = sp(rx, B).c, nA = nFor(A), mA = nA * mrOf(A), nB = nA * b / a, MB = mrOf(B), mB = nB * MB, made = sp(rx, B).side === "R";
+    return Q("ratio", "What mass of " + fx(B) + (made ? " is made from " : " reacts with ") + "<b>" + gv(mA) + " g</b> of " + fx(A) + "? <span class=\"st\">(" + arHint([A, B]) + ")</span>", eqHTML(rx), mB, "g",
+      [{ v: nA * MB, err: a !== b ? "ratio" : "masscmp" }, { v: nA * a / b * MB, err: "ratioinv" }, { v: nB * wrongMrs(B)[0], err: "mr" }, { v: mA * b / a, err: "masscmp" }],
+      "n(" + fxt(A) + ") = " + gv(mA) + " ÷ " + mrOf(A) + " = " + sf(nA) + " mol; n(" + fxt(B) + ") = × " + b + "/" + a + " = " + sf(nB) + " mol; mass = × " + MB + " = " + sf(mB) + " g"); },
+  rgas: function () { var rx = pick(rxWith(function (r) { return solidR(r).length && gasP(r).length; })), A = solidR(rx)[0], B = gasP(rx)[0];
+    var a = sp(rx, A).c, b = sp(rx, B).c, nA = nFor(A), mA = nA * mrOf(A), nB = nA * b / a, v = nB * VM;
+    return Q("ratio", "What volume of " + fx(B) + " (at r.t.p.) is made when <b>" + gv(mA) + " g</b> of " + fx(A) + " reacts completely? <span class=\"st\">(" + arHint([A]) + ")</span>", eqHTML(rx), v, "dm³",
+      [{ v: a !== b ? nA * VM : nA * 2 * VM, err: "ratio" }, { v: nA * a / b * VM, err: "ratioinv" }, { v: nB * 22.4, err: "v224" }, { v: mA / wrongMrs(A)[0] * b / a * VM, err: "mr" }],
+      "n(" + fxt(A) + ") = " + gv(mA) + " ÷ " + mrOf(A) + " = " + sf(nA) + " mol; n(" + fxt(B) + ") = × " + b + "/" + a + " = " + sf(nB) + " mol; V = × 24 = " + sf(v) + " dm³"); },
+  conc: function () { var f = pick(SOLUTES), n = pick([0.02, 0.05, 0.1, 0.2, 0.25]), V = pick([100, 200, 250, 500]), m = n * mrOf(f), c = n / (V / 1000);
+    return Q("conc", "<b>" + gv(m) + " g</b> of " + fx(f) + " is dissolved in water to make <b>" + V + " cm³</b> of solution. What is the concentration in mol/dm³? <span class=\"st\">(" + arHint([f]) + ")</span>", "", c, "mol/dm³",
+      [{ v: n / V, err: "unit" }, { v: m / (V / 1000), err: "konst" }, { v: n * V / 1000, err: "inv" }, { v: m / wrongMrs(f)[0] / (V / 1000), err: "mr" }],
+      "n = " + gv(m) + " ÷ " + mrOf(f) + " = " + sf(n) + " mol; c = " + sf(n) + " ÷ " + sf(V / 1000) + " dm³ = " + sf(c) + " mol/dm³"); },
+  gdm: function () { var f = pick(SOLUTES.concat(["H2SO4", "HCl", "HNO3"])), c = pick([0.05, 0.1, 0.2, 0.25, 0.5, 1, 2]), M = mrOf(f), g = c * M, toG = Math.random() < .5;
+    if (toG) return Q("conc", "A solution of " + fx(f) + " is <b>" + sf(c) + " mol/dm³</b>. What is its concentration in <b>g/dm³</b>? <span class=\"st\">(" + arHint([f]) + ")</span>", "", g, "g/dm³",
+      [{ v: c / M, err: "inv" }, { v: c * wrongMrs(f)[0], err: "mr" }, { v: c * 24, err: "konst" }, { v: c * pick(wrongMrs(f)), err: "mr" }], sf(c) + " × " + M + " = " + sf(g) + " g/dm³");
+    return Q("conc", "A solution of " + fx(f) + " contains <b>" + gv(g) + " g/dm³</b>. What is its concentration in <b>mol/dm³</b>? <span class=\"st\">(" + arHint([f]) + ")</span>", "", c, "mol/dm³",
+      [{ v: g * M, err: "inv" }, { v: g / wrongMrs(f)[0], err: "mr" }, { v: g / 24, err: "konst" }, { v: g / pick(wrongMrs(f)), err: "mr" }], gv(g) + " ÷ " + M + " = " + sf(c) + " mol/dm³"); },
+  titr: function () { var t = pick(TIT), cAlk = pick([0.1, 0.2, 0.25, 0.5]), vAlk = pick([20, 25]), cAc = pick([0.1, 0.2, 0.5]);
+    var nAlk = cAlk * vAlk / 1000, nAc = nAlk * t.b / t.a, v = nAc / cAc * 1000;
+    if (v > 100 || v < 5) { cAc = cAlk; nAc = nAlk * t.b / t.a; v = nAc / cAc * 1000; }
+    return Q("conc", "What volume of <b>" + sf(cAc) + " mol/dm³</b> " + fx(t.acid) + " exactly neutralises <b>" + vAlk + ".0 cm³</b> of <b>" + sf(cAlk) + " mol/dm³</b> " + fx(t.alk) + "?", eqStrHTML(t.eq), v, "cm³",
+      [{ v: t.a !== t.b ? nAlk / cAc * 1000 : v * 2, err: "ratio" }, { v: t.a !== t.b ? nAlk * t.a / t.b / cAc * 1000 : v / 2, err: t.a !== t.b ? "ratioinv" : "ratio" }, { v: v / 1000, err: "unit" }, { v: cAc / nAc, err: "inv" }],
+      "n(" + fxt(t.alk) + ") = " + sf(cAlk) + " × " + vAlk / 1000 + " = " + sf(nAlk) + " mol; n(" + fxt(t.acid) + ") = × " + t.b + "/" + t.a + " = " + sf(nAc) + " mol; V = " + sf(nAc) + " ÷ " + sf(cAc) + " = " + sf(nAc / cAc) + " dm³ = " + sf(v) + " cm³"); },
+  limit: function () { var rx = pick(rxWith(function (r) { return solidR(r).length && acidL(r).length && gasP(r).length; })), A = solidR(rx)[0], C = acidL(rx)[0], G = gasP(rx)[0];
+    var a = sp(rx, A).c, c = sp(rx, C).c, g = sp(rx, G).c, nA = nFor(A), conc = pick([0.5, 1, 2]);
+    var acidLimits = Math.random() < .55, nC = acidLimits ? nA * c / a * pick([0.4, 0.5, 0.6]) : nA * c / a * pick([1.5, 2]);
+    conc = pick([0.5, 1, 2].filter(function (x) { var vv = nC / x * 1000; return vv >= 20 && vv <= 500; })) || 2;
+    var V = Math.max(10, Math.round(nC / conc * 1000 / 5) * 5); nC = conc * V / 1000;
+    var fromA = nA * g / a, fromC = nC * g / c, nG = Math.min(fromA, fromC), v = nG * VM, excessV = Math.max(fromA, fromC) * VM, mA = nA * mrOf(A);
+    return Q("limit", "<b>" + gv(mA) + " g</b> of " + fx(A) + " is added to <b>" + V + " cm³</b> of <b>" + sf(conc) + " mol/dm³</b> " + fx(C) + ". What volume of " + fx(G) + " forms at r.t.p.? <span class=\"st\">(" + arHint([A]) + ")</span>", eqHTML(rx), v, "dm³",
+      [{ v: excessV, err: "limit" }, { v: (fromC < fromA ? nC : nA) * VM, err: "ratio" }, { v: nG * 22.4, err: "v224" }, { v: v * 1000, err: "unit" }],
+      "n(" + fxt(A) + ") = " + sf(nA) + " mol, n(" + fxt(C) + ") = " + sf(conc) + " × " + sf(V / 1000) + " = " + sf(nC) + " mol. " + (fromC < fromA ? fxt(C) : fxt(A)) + " runs out first, so n(" + fxt(G) + ") = " + sf(nG) + " mol; V = × 24 = " + sf(v) + " dm³"); },
+  yield: function () { var rx = pick(rxWith(function (r) { return solidR(r).length && massP(r).filter(function (x) { return solidR(r).indexOf(x) < 0; }).length; })), A = solidR(rx)[0], B = massP(rx).filter(function (x) { return x !== A; })[0];
+    var a = sp(rx, A).c, b = sp(rx, B).c, nA = nFor(A), mA = nA * mrOf(A), nB = nA * b / a, theo = nB * mrOf(B), y = pick([60, 65, 70, 75, 80, 85, 90]), act = +(theo * y / 100).toPrecision(3), yy = act / theo * 100;
+    var w = [{ v: theo / act * 100, err: "pctinv" }, { v: act / mA * 100, err: "masscmp" }, { v: act / (nB * wrongMrs(B)[0]) * 100, err: "mr" }]; if (a !== b) w.push({ v: act / (nA * mrOf(B)) * 100, err: "ratio" });
+    return Q("yield", "<b>" + gv(mA) + " g</b> of " + fx(A) + " reacts completely, but only <b>" + gv(act) + " g</b> of " + fx(B) + " is collected. What is the percentage yield? <span class=\"st\">(" + arHint([A, B]) + ")</span>", eqHTML(rx), yy, "", w,
+      "n(" + fxt(A) + ") = " + sf(nA) + " mol → n(" + fxt(B) + ") = " + sf(nB) + " mol → theoretical " + gv(theo) + " g; " + gv(act) + " ÷ " + gv(theo) + " × 100 = " + sf(yy) + " %", pct); },
+  purity: function () { var rx = pick(rxWith(function (r) { return /CO3/.test(r.L[0][1]) && gasP(r).indexOf("CO2") > -1; })), A = rx.L[0][1], nA = nFor(A), pure = nA * mrOf(A), pp = pick([60, 70, 75, 80, 90]), sample = +(pure / pp * 100).toPrecision(3), p = pure / sample * 100, v = nA * VM;
+    return Q("purity", "A <b>" + gv(sample) + " g</b> sample of impure " + fx(A) + " reacts with excess acid and gives <b>" + gv(v) + " dm³</b> of CO<span class=\"sub\">2</span> at r.t.p. What is the percentage purity? <span class=\"st\">(" + arHint([A]) + ")</span>", eqHTML(rx), p, "",
+      [{ v: sample / pure * 100, err: "pctinv" }, { v: v / 22.4 * mrOf(A) / sample * 100, err: "v224" }, { v: nA * wrongMrs(A)[0] / sample * 100, err: "mr" }, { v: nA * 44 / sample * 100, err: "masscmp" }],
+      "n(CO₂) = " + gv(v) + " ÷ 24 = " + sf(nA) + " mol = n(" + fxt(A) + "); mass = × " + mrOf(A) + " = " + gv(pure) + " g; " + gv(pure) + " ÷ " + gv(sample) + " × 100 = " + sf(p) + " %", pct); },
+  mr: function () { var f = pick(BRACKETS.concat(["Na2CO3", "CuSO4", "H2SO4"])), M = mrOf(f);
+    return Q("mr", "What is the relative formula mass, M<span class=\"sub\">r</span>, of " + fx(f) + "? <span class=\"st\">(" + arHint([f]) + ")</span>", "", M, "", wrongMrs(f).map(function (v) { return { v: v, err: "mr" }; }),
+      "Mr of " + fxt(f) + " = " + M, function (v) { return String(Math.round(v * 10) / 10); }); }
+};
+var BOSS_POOL = {
+  easy: { p1: ["m2n", "m2v", "v2m", "part", "conc", "gdm", "mr", "rmass"], p2: ["rmass", "rgas", "titr", "limit", "conc", "m2v"] },
+  hard: { p1: ["m2n", "m2v", "v2m", "part", "conc", "gdm", "rmass", "rgas"], p2: ["rgas", "titr", "limit", "yield", "purity", "rmass", "yield", "purity"] }
+};
+
+/* =================== PIXEL SPRITES (used if an image file is missing) =================== */
+var HERO_MAP = [
+  "......kkkkk.....", ".....kHHHHHk....", "....kHHHHHHHk...", "....kHSSSSSHk...", "...kkkkSSkkkk...", "...kGGkSSkGGk...",
+  "....kkSSSSkk....", ".....kSmmSk.....", "....kWWkkWWk....", "...kWWWtWWWWk.kk", "..kWWkWtWWkWWkFk", "..kSkWWtWWWkSkFk",
+  "...kkWWtWWWWkkkk", "....kWWWWWWk....", "....kBBkkBBk....", "....kkk..kkk...."
+];
+var HERO_PAL = { k: "#1F2A2E", H: "#3B2A20", S: "#F4C9A8", G: "#2EF2E0", m: "#C0504D", W: "#FFFFFF", t: "#069494", F: "#FF8243", B: "#3A4FA0" };
+var MOLE_MAP = [
+  ".....kkkkkk.....", "....kBBBBBBk....", "...kBBBBBBBBk...", "..kGGGBBBBGGGk..", "..kGggGkkGggGk..", "..kGGGBBBBGGGk..",
+  "...kBbbssbbBk...", "...kBbbkkbbBk...", "....kBbbbbBk....", "...kWWWkkWWWk...", "..kWWWWwWWWWWk..", ".kbkWWWwWWWWkbk.",
+  ".kbkWWWwWWWWkbk.", "..kkWWWwWWWWkk..", "...kWWWWWWWWk...", "...kbbk..kbbk..."
+];
+var MOLE_PAL = { k: "#1F1410", B: "#5A3A22", b: "#C08A5A", s: "#E8A0A0", G: "#D4A017", g: "#BFE6F0", W: "#F4F8FA", w: "#B9CFD8" };
+var BARREL_MAP = ["..kkkkkk..", ".kOOOOOOk.", "kOoOOOOoOk", "kKKKKKKKKk", "kOoOOOOoOk", "kOoOOOOoOk", "kKKKKKKKKk", "kOoOOOOoOk", ".kOOOOOOk.", "..kkkkkk.."];
+var BARREL_UP_MAP = [".kkkkkkk.", "kKKKKKKKk", "kOoOOoOOk", "kOoOOoOOk", "kKKKKKKKk", "kOoOOoOOk", "kOoOOoOOk", "kKKKKKKKk", ".kkkkkkk."];
+var BARREL_PAL = { k: "#1F1410", O: "#9A5B2E", o: "#6B3E1E", K: "#5C6670" };
+var HEART_MAP = [".kk.kk.", "kRRkRRk", "kRwRRRk", "kRRRRRk", ".kRRRk.", "..kRk..", "...k..."];
+var HEART_PAL = { k: "#0D0B1A", R: "#FF4D5E", w: "#FFFFFF" };
+var PIX = { hero: [HERO_MAP, HERO_PAL], heroHurt: [HERO_MAP, HERO_PAL], heroClimb: [HERO_MAP, HERO_PAL], mole: [MOLE_MAP, MOLE_PAL], moleHurt: [MOLE_MAP, MOLE_PAL],
+  moleThrow: [MOLE_MAP, MOLE_PAL], moleSide: [MOLE_MAP, MOLE_PAL], barrel: [BARREL_MAP, BARREL_PAL], barrelUp: [BARREL_UP_MAP, BARREL_PAL] };
+function pixelSVG(map, pal) {
+  var w = 0, r = "";
+  map.forEach(function (row, y) { w = Math.max(w, row.length); for (var x = 0; x < row.length; x++) { var c = pal[row[x]]; if (c) r += '<rect x="' + x + '" y="' + y + '" width="1.02" height="1.02" fill="' + c + '"/>'; } });
+  return '<svg viewBox="0 0 ' + w + " " + map.length + '" shape-rendering="crispEdges" aria-hidden="true">' + r + "</svg>";
+}
+function pixelCanvas(map, pal) {
+  var c = document.createElement("canvas"), w = 0; map.forEach(function (r) { w = Math.max(w, r.length); });
+  c.width = w; c.height = map.length; var x = c.getContext("2d");
+  map.forEach(function (row, y) { for (var i = 0; i < row.length; i++) { var col = pal[row[i]]; if (col) { x.fillStyle = col; x.fillRect(i, y, 1, 1); } } });
+  return c;
+}
+// SP[key] = { el: image or canvas, ok: real image loaded?, w, h }
+var SP = {};
+Object.keys(IMG).forEach(function (k) {
+  var px = pixelCanvas(PIX[k][0], PIX[k][1]);
+  SP[k] = { el: px, ok: false, pixel: true, w: px.width, h: px.height };
+  var im = new Image();
+  im.onload = function () { SP[k] = { el: im, ok: true, pixel: false, w: im.naturalWidth, h: im.naturalHeight }; if (k === "hero" || k === "moleSide" || k === "barrel") paintBossSprites(); };
+  im.onerror = function () { SP[k].failed = true; };
+  im.src = IMG[k];
+});
+function domArt(k) { return SP[k] && SP[k].ok ? '<img src="' + esc(IMG[k]) + '" alt="">' : pixelSVG(PIX[k][0], PIX[k][1]); }
+function heartSVG() { return pixelSVG(HEART_MAP, HEART_PAL); }
+function heartsHTML(n, max, breakIdx) { var h = ""; for (var i = 0; i < max; i++) h += '<span class="' + (i >= n ? "lost" : "") + (i === breakIdx ? " breaking" : "") + '">' + heartSVG() + "</span>"; return h; }
+
+/* =================== SOUND =================== */
+var Sound = {
+  on: load("sound", true), ctx: null,
+  tone: function (f, type, dur, vol, delay, f2) {
+    if (!this.on) return;
+    try {
+      this.ctx = this.ctx || new (window.AudioContext || window.webkitAudioContext)();
+      if (this.ctx.state === "suspended") this.ctx.resume();
+      var c = this.ctx, t = c.currentTime + (delay || 0), o = c.createOscillator(), g = c.createGain();
+      o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+      g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + dur + .02);
+    } catch (e) {}
+  },
+  tap: function () { this.tone(660, "square", .05, .04); },
+  jump: function () { this.tone(300, "square", .16, .05, 0, 700); },
+  step: function () { this.tone(520, "triangle", .04, .03); },
+  ok: function () { this.tone(660, "square", .09, .06); this.tone(990, "square", .14, .06, .08); },
+  bad: function () { this.tone(180, "square", .2, .07); },
+  snap: function () { this.tone(900, "sawtooth", .08, .06, 0, 200); this.tone(120, "square", .35, .07, .08, 60); },
+  bonus: function () { this.tone(1046, "square", .07, .05); this.tone(1318, "square", .1, .05, .06); },
+  throw_: function () { this.tone(220, "triangle", .2, .06, 0, 110); },
+  thud: function () { this.tone(90, "square", .08, .03); },
+  hit: function () { [880, 660, 990].forEach(function (n, i) { Sound.tone(n, "square", .07, .07, i * .05); }); },
+  hurt: function () { this.tone(140, "sawtooth", .3, .08); this.tone(90, "square", .3, .06, .1); },
+  level: function () { [523, 659, 784, 1047].forEach(function (n, i) { Sound.tone(n, "square", .12, .06, i * .1); }); },
+  escape: function () { [784, 740, 698, 659, 622].forEach(function (n, i) { Sound.tone(n, "square", .09, .05, i * .08); }); },
+  win: function () { [523, 659, 784, 1047, 784, 1047].forEach(function (n, i) { Sound.tone(n, "square", .14, .06, i * .12); }); },
+  lose: function () { [392, 330, 262, 196].forEach(function (n, i) { Sound.tone(n, "square", .22, .06, i * .2); }); }
+};
+var Music = {
+  el: $("music"), on: load("music", true), vol: MUSIC_VOLUME,
+  playing: function () { return !$("scr-climb").hidden || !$("scr-boss").hidden; },
+  play: function () { if (!this.on) return; clearInterval(this.fade); try { this.el.volume = this.vol; var p = this.el.play(); if (p && p.catch) p.catch(function () {}); } catch (e) {} },
+  stop: function () { clearInterval(this.fade); try { this.el.pause(); this.el.currentTime = 0; this.el.volume = this.vol; } catch (e) {} },
+  fadeOut: function () {
+    var el = this.el, self = this, v = el.volume;
+    clearInterval(this.fade);
+    this.fade = setInterval(function () { v -= .03; if (v <= 0) self.stop(); else el.volume = v; }, 60);
+  }
+};
+function paintSound() {
+  $("btn-sound").classList.toggle("off", !Sound.on); $("btn-sound").setAttribute("aria-label", Sound.on ? "Sound effects on" : "Sound effects off");
+  $("btn-music").classList.toggle("off", !Music.on); $("btn-music").setAttribute("aria-label", Music.on ? "Music on" : "Music off");
+}
+$("btn-sound").addEventListener("click", function () { Sound.on = !Sound.on; store("sound", Sound.on); paintSound(); });
+$("btn-music").addEventListener("click", function () {
+  Music.on = !Music.on; store("music", Music.on); paintSound();
+  if (!Music.on) Music.el.pause(); else if (Music.playing()) Music.play();
+});
+document.addEventListener("visibilitychange", function () {
+  if (document.hidden) { Music.el.pause(); clearKeys(); } else if (Music.playing()) Music.play();
+});
+paintSound();
+
+if (navigator.maxTouchPoints > 0 || "ontouchstart" in window) document.body.classList.add("touch"); // phones and iPads always get the on-screen buttons
+/* =================== SCREENS =================== */
+function show(id) {
+  ["scr-start", "scr-climb", "scr-boss", "scr-bend", "scr-result"].forEach(function (s) { $(s).hidden = s !== id; });
+  var dark = id === "scr-climb" || id === "scr-boss" || id === "scr-bend";
+  document.body.classList.toggle("dark", dark);
+  document.body.classList.toggle("playing", id === "scr-climb");
+  $("btn-quit").hidden = id === "scr-start";
+  if (id !== "scr-climb" && id !== "scr-boss") Calc.close();
+  window.scrollTo(0, 0);
+}
+
+/* =================== START SCREEN =================== */
+var G = { lv: load("lv", "easy") };
+(function setup() {
+  var sel = $("in-cls");
+  CLASSES.forEach(function (c) { var o = document.createElement("option"); o.textContent = c; sel.appendChild(o); });
+  var st = load("student", null);
+  if (st) { $("in-name").value = st.name || ""; sel.value = st.cls || ""; $("in-reg").value = st.reg || ""; }
+  ["lv-easy", "lv-hard"].forEach(function (id) { $(id).addEventListener("click", function () { G.lv = this.dataset.lv; store("lv", G.lv); paintStart(); }); });
+  paintStart();
+})();
+function paintStart() {
+  $("lv-easy").setAttribute("aria-pressed", G.lv === "easy");
+  $("lv-hard").setAttribute("aria-pressed", G.lv === "hard");
+  var b = load("best", {})[G.lv];
+  $("txt-best").textContent = b != null ? b + " points" : "–";
+}
+function readStudent() {
+  var name = $("in-name").value.trim(), cls = $("in-cls").value, reg = $("in-reg").value.trim();
+  if (!name) return err("Type your name."), null;
+  if (!cls) return err("Choose your class."), null;
+  if (!/^\d{1,2}$/.test(reg)) return err("Type your register number (1–2 digits)."), null;
+  err("");
+  var s = { name: name, cls: cls, reg: reg }; store("student", s); return s;
+  function err(m) { $("form-err").textContent = m; }
+}
+$("btn-go").addEventListener("click", function () {
+  var s = readStudent(); if (!s) return;
+  Sound.tone(1, "sine", .01, .0001);
+  newSession(s);
+  if (location.hash === "#boss") startBoss(); else startClimb();
+});
+$("btn-quit").addEventListener("click", function () { stopClimb(); stopBossTimer(); Music.stop(); Confetti.stop(); show("scr-start"); paintStart(); });
+$("form-start").addEventListener("submit", function (e) { e.preventDefault(); });
+
+function newSession(student) {
+  G.student = student; G.points = 0; G.t0 = Date.now(); G.log = []; G.attempt = 0;
+  G.climb = { hits: 0, jumped: 0, restarts: 0, first: 0, floors: 0 };
+}
+function logAnswer(phase, type, ok, err, text, picked, right, extra) {
+  G.log.push({ phase: phase, type: type, ok: ok, err: err, text: text, picked: picked, right: right, attempt: G.attempt, level: extra });
+}
+function addPoints(n) { G.points += n; if ($("c-pts")) $("c-pts").textContent = G.points; }
+
+/* =================== THE CLIMB =================== */
+var W = 400, H = 560, cv = $("cv"), ctx = cv.getContext("2d"), SCALE = 1;
+// girders: top surface y at x (sloped like the arcade original). down = direction barrels roll.
+function girder(x0, y0, x1, y1, down) { return { x0: x0, x1: x1, y: function (x) { return y0 + (y1 - y0) * (x - x0) / (x1 - x0); }, down: down }; }
+var GD = [girder(0, 540, 400, 528, -1), girder(0, 402, 355, 414, 1), girder(40, 284, 400, 272, -1), girder(0, 150, 345, 160, 1)];
+var LAD_X = [[90, 200, 310], [100, 205, 310], [150, 240, 330]];
+var MOLE_X = 62, BR = 10;
+var LEVEL_INFO = [
+  { name: "THE LOADING BAY", tip: "Ladders show the <b>operation</b>. Pick ÷ or × wisely." },
+  { name: "THE STOREROOM", tip: "Ladders show <b>answers</b> now. Work it out first. Tap CALC for a calculator." },
+  { name: "THE INNER LAB", tip: "Equations and <b>mole ratios</b>. The Mole has nowhere left to run." }
+];
+var CL = null, craf = 0, lastT = 0;
+var K = { l: false, r: false, u: false, d: false, jq: false };
+function clearKeys() { K.l = K.r = K.u = K.d = K.jq = false; document.querySelectorAll("#pad button.on").forEach(function (b) { b.classList.remove("on"); }); }
+
+function startClimb() {
+  G.attempt = 0;
+  show("scr-climb"); Music.stop(); Music.play();
+  buildLevel(1, true);
+  fit();
+  stopClimb(); lastT = performance.now(); craf = requestAnimationFrame(loop);
+}
+function stopClimb() { cancelAnimationFrame(craf); craf = 0; }
+function buildLevel(level, intro) {
+  var ch = makeChain(level, G.lv);
+  CL = {
+    level: level, chain: ch, steps: ch.steps, reached: 0, hearts: HEARTS, t: 0, state: "play",
+    barrels: [], pops: [], nextBarrel: 2.5, toastT: 0,
+    hero: { x: 30, y: GD[0].y(30), vy: 0, state: "walk", floor: 0, face: 1, inv: 0, hurt: 0, anim: 0, ignore: -1, lad: null },
+    mole: { x: MOLE_X, state: "idle", t: 0 },
+    ladders: []
+  };
+  ch.steps.forEach(function (s, f) {
+    var order = shuffle([0, 1, 2]);
+    s.labels.forEach(function (lab, i) { CL.ladders.push({ f: f, x: LAD_X[f][order[i]], lab: lab, state: "idle" }); });
+    s.tries = 0;
+  });
+  paintCHud(); paintQ(); hideToast();
+  if (intro) cover("intro"); else { $("c-cover").hidden = true; }
+}
+function cover(kind) {
+  var c = $("c-cover"), L = LEVEL_INFO[CL.level - 1], html = "";
+  CL.state = kind;
+  if (kind === "intro") {
+    html = '<span class="lvname">LEVEL ' + CL.level + " OF 3</span><h2>" + L.name + "</h2><p>" + L.tip + "</p>" +
+      "<ul><li>Stand at the bottom of a ladder and press ▲ to climb.</li><li>Only one ladder per floor holds. The others snap and drop you a floor!</li><li>Jump over barrels. Each hit costs a heart.</li></ul>" +
+      '<button class="pbtn" type="button" data-go="play">START ▶</button>';
+  } else if (kind === "dead") {
+    html = '<h2 class="red">KNOCKED OUT!</h2>' + (SP.heroHurt.ok ? '<img src="' + IMG.heroHurt + '" alt="">' : "") + "<p>The barrels got you. Level " + CL.level + " starts again with new questions.</p>" +
+      '<button class="pbtn" type="button" data-go="restart">TRY LEVEL AGAIN ↻</button>';
+  } else if (kind === "escaped") {
+    var first = CL.steps.filter(function (s) { return s.tries === 0; }).length;
+    html = '<h2>HE ESCAPED!</h2><p>The Mole Scientist scurried up to the next part of his lair. After him!</p>' +
+      "<p>Ladders right first time: <b>" + first + "/3</b></p>" +
+      '<button class="pbtn" type="button" data-go="next">LEVEL ' + (CL.level + 1) + " ▶</button>";
+  } else if (kind === "cornered") {
+    html = '<h2 class="red">CORNERED!</h2>' + (SP.mole.ok ? '<img src="' + IMG.mole + '" alt="">' : "") + "<p>No more ladders. No escape. Time to win back your research!</p>" +
+      '<button class="pbtn" type="button" data-go="boss">BOSS FIGHT ▶</button>';
+  }
+  c.innerHTML = html; c.hidden = false;
+  clearKeys();
+  setTimeout(function () { var b = c.querySelector("button"); if (b) b.focus(); }, 50);
+}
+$("c-cover").addEventListener("click", function (e) {
+  var b = e.target.closest("[data-go]"); if (!b) return;
+  var go = b.dataset.go; Sound.tap();
+  if (go === "play") { $("c-cover").hidden = true; CL.state = "play"; Music.play(); }
+  else if (go === "restart") { G.climb.restarts++; buildLevel(CL.level, false); CL.state = "play"; }
+  else if (go === "next") { buildLevel(CL.level + 1, true); }
+  else if (go === "boss") { stopClimb(); startBoss(); }
+});
+function paintCHud(breakIdx) {
+  var f = Math.min(CL.hero.floor, 2);
+  $("c-lv").innerHTML = "LEVEL " + CL.level + "/3<span>" + (CL.hero.floor >= 3 ? "TOP FLOOR" : "FLOOR " + (f + 1) + "/3") + "</span>";
+  $("c-hearts").innerHTML = heartsHTML(CL.hearts, HEARTS, breakIdx);
+  $("c-pts").textContent = G.points;
+}
+function paintQ() {
+  var f = CL.hero.floor, box = $("c-q"), s = CL.steps[Math.min(f, 2)], html = "";
+  var s0 = CL.level === 1 ? 1 : 0, items = [CL.steps[s0].from];
+  for (var i = s0; i < 3; i++) if (i < CL.reached) items.push(CL.steps[i].outText);
+  if (CL.reached < 3) items.push("?");
+  var crumb = '<div class="crumb">' + items.map(function (t, i) { return '<span class="q' + (i === items.length - 1 ? " now" : "") + '">' + esc(t) + "</span>"; }).join("→") + "</div>";
+  if (f >= 3) html = '<p class="qhead">LEVEL ' + CL.level + " · TOP FLOOR</p><p class=\"qtext\">" + (CL.level < 3 ? "Grab the Mole Scientist!" : "You've cornered him!") + "</p>" + crumb;
+  else {
+    var solved = f < CL.reached;
+    html = '<p class="qhead">LEVEL ' + CL.level + " · FLOOR " + (f + 1) + " · " + TYPES[s.type].toUpperCase() + (solved ? " · ✓ DONE" : "") + "</p>" +
+      (s.eq ? '<div class="qeqline">' + eqHTML(s.eq) + "</div>" : "") +
+      '<p class="qtext">' + (solved ? "✓ " + esc(s.work) + ". Climb the green ladder." : s.q) + "</p>" +
+      (solved ? "" : '<p class="qhint">' + s.hint + "</p>") + crumb;
+  }
+  box.innerHTML = html;
+}
+function toast(html, bad) {
+  var t = $("c-toast"); t.innerHTML = html; t.className = "toast" + (bad ? " bad" : ""); t.hidden = false; CL.toastT = bad ? 4.5 : 3;
+}
+function hideToast() { $("c-toast").hidden = true; }
+
+// layout: fit the canvas into the space left on screen
+function fit() {
+  if ($("scr-climb").hidden) return;
+  var wrap = $("c-wrap").parentNode, cs = getComputedStyle(document.querySelector(".wrap"));
+  var others = document.querySelector(".topbar").offsetHeight + $("c-hud").offsetHeight + $("c-q").offsetHeight +
+    ($("pad").offsetParent ? $("pad").offsetHeight : 0) + (document.querySelector(".keys").offsetParent ? document.querySelector(".keys").offsetHeight : 0) +
+    parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) + 8 * 3 + 6;
+  var availH = window.innerHeight - others, availW = wrap.clientWidth - 6;
+  SCALE = Math.max(0.45, Math.min(availW / W, availH / H, 1.5));
+  var dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+  cv.style.width = Math.round(W * SCALE) + "px"; cv.style.height = Math.round(H * SCALE) + "px";
+  cv.width = Math.round(W * SCALE * dpr); cv.height = Math.round(H * SCALE * dpr);
+  ctx.setTransform(cv.width / W, 0, 0, cv.height / H, 0, 0);
+}
+window.addEventListener("resize", function () { fit(); });
+
+// input: keyboard
+var KEYMAP = { ArrowLeft: "l", a: "l", A: "l", ArrowRight: "r", d: "r", D: "r", ArrowUp: "u", w: "u", W: "u", ArrowDown: "d", s: "d", S: "d", " ": "j", Spacebar: "j", x: "j", X: "j", k: "j", K: "j" };
+document.addEventListener("keydown", function (e) {
+  if (!Calc.el.hidden && Calc.key(e)) return;
+  if ($("scr-climb").hidden || !CL) return;
+  if ((e.key === "c" || e.key === "C") && !e.metaKey && !e.ctrlKey) { Calc.toggle("c-calc"); e.preventDefault(); return; }
+  var k = KEYMAP[e.key]; if (!k) return;
+  if (e.target && /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
+  if (k === "j" && e.target && e.target.closest && e.target.closest("button") && !$("c-cover").hidden) return; // let Space press the cover button
+  e.preventDefault();
+  if (k === "j") { if (!e.repeat) K.jq = true; } else K[k] = true;
+});
+document.addEventListener("keyup", function (e) { var k = KEYMAP[e.key]; if (k && k !== "j") K[k] = false; });
+window.addEventListener("blur", clearKeys);
+// input: on-screen pad (multi-touch friendly)
+(function pad() {
+  var held = {};
+  function down(e) {
+    var b = e.target.closest("button[data-k]"); if (!b) return;
+    e.preventDefault(); try { b.setPointerCapture(e.pointerId); } catch (x) {}
+    held[e.pointerId] = b; b.classList.add("on");
+    var k = b.dataset.k; if (k === "j") K.jq = true; else K[k] = true;
+  }
+  function up(e) {
+    var b = held[e.pointerId]; if (!b) return; delete held[e.pointerId];
+    b.classList.remove("on"); var k = b.dataset.k;
+    var still = Object.keys(held).some(function (id) { return held[id].dataset.k === k; });
+    if (k !== "j" && !still) K[k] = false;
+  }
+  var p = $("pad");
+  p.addEventListener("pointerdown", down); p.addEventListener("pointerup", up); p.addEventListener("pointercancel", up); p.addEventListener("lostpointercapture", up);
+  p.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+})();
+
+var SPEED = 100, CLIMB = 70, GRAV = 850, JUMPV = 330;
+function loop(t) {
+  var dt = Math.min(0.05, (t - lastT) / 1000); lastT = t;
+  var paused = CL.state !== "play" || !Calc.el.hidden || document.hidden;
+  $("c-paused").hidden = !(CL.state === "play" && !Calc.el.hidden);
+  if (!paused) update(dt);
+  else if (CL.state === "top") updateTop(dt);
+  if (CL.toastT > 0) { CL.toastT -= dt; if (CL.toastT <= 0) hideToast(); }
+  draw();
+  craf = requestAnimationFrame(loop);
+}
+function onGirder(k, x) { var g = GD[k]; return x >= g.x0 && x <= g.x1; }
+function ladderNear(f, x, dir) {
+  var best = null, bd = 13;
+  CL.ladders.forEach(function (L) {
+    var d = Math.abs(L.x - x); if (d >= bd) return;
+    if (dir === "up" && L.f === f && L.state !== "broken" && f <= CL.reached) { best = L; bd = d; }
+    if (dir === "down" && L.f + 1 === f && L.state === "done") { best = L; bd = d; }
+  });
+  return best;
+}
+function update(dt) {
+  CL.t += dt;
+  var h = CL.hero;
+  if (h.inv > 0) h.inv -= dt;
+  if (h.hurt > 0) h.hurt -= dt;
+  // hero
+  if (h.state === "climb") {
+    var L = h.lad, by = GD[L.f].y(L.x), ty = GD[L.f + 1].y(L.x);
+    var mv = (K.u ? -1 : 0) + (K.d ? 1 : 0);
+    if (mv) { h.y += mv * CLIMB * dt; h.anim += dt; if (Math.floor(h.anim / .18) !== Math.floor((h.anim - dt) / .18)) Sound.step(); }
+    if (h.y >= by) { h.y = by; h.state = "walk"; h.floor = L.f; paintCHud(); paintQ(); }
+    else if (!L.lab.ok && (by - h.y) / (by - ty) >= 0.45) snap(L);
+    else if (h.y <= ty) { h.y = ty; h.state = "walk"; h.floor = L.f + 1; arrive(L); }
+  } else {
+    var dx = (K.r ? 1 : 0) - (K.l ? 1 : 0);
+    if (dx) { h.face = dx; h.anim += dt; }
+    h.x = Math.max(10, Math.min(W - 10, h.x + dx * SPEED * dt));
+    if (h.state === "walk") {
+      if (!onGirder(h.floor, h.x)) { h.state = "air"; h.vy = 0; h.ignore = -1; }
+      else {
+        h.y = GD[h.floor].y(h.x);
+        var up = K.u && ladderNear(h.floor, h.x, "up"), dn = K.d && ladderNear(h.floor, h.x, "down");
+        if (K.jq) { h.state = "air"; h.vy = -JUMPV; h.jumpFrom = h.floor; Sound.jump(); }
+        else if (up) { h.state = "climb"; h.lad = up; h.x = up.x; h.y -= 1; }
+        else if (dn) { h.state = "climb"; h.lad = dn; h.x = dn.x; h.y += 2; }
+      }
+    }
+    if (h.state === "air") {
+      var py = h.y; h.vy += GRAV * dt; h.y += h.vy * dt;
+      if (h.vy > 0) for (var k = 3; k >= 0; k--) {
+        if (k === h.ignore || !onGirder(k, h.x)) continue;
+        var gy = GD[k].y(h.x);
+        if (py <= gy + 1 && h.y >= gy) { h.y = gy; h.vy = 0; h.state = "walk"; h.ignore = -1; if (h.floor !== k) { h.floor = k; paintCHud(); paintQ(); } break; }
+      }
+      if (h.y > H + 40) { h.x = 30; h.y = GD[0].y(30); h.state = "walk"; h.floor = 0; paintCHud(); paintQ(); }
+    }
+  }
+  K.jq = false;
+  // mole throws barrels
+  var m = CL.mole;
+  CL.nextBarrel -= dt;
+  if (m.state === "idle" && CL.nextBarrel <= 0.55 && CL.barrels.length < 6) { m.state = "throw"; m.t = 0; }
+  if (m.state === "throw") {
+    m.t += dt;
+    if (m.t >= 0.55) {
+      m.state = "idle"; Sound.throw_();
+      var bx = MOLE_X + 40;
+      CL.barrels.push({ x: bx, y: GD[3].y(bx) - BR, vx: BARREL_SPEED[CL.level - 1], vy: 0, k: 3, state: "roll", rot: 0, jumped: false });
+      CL.nextBarrel = BARREL_GAP[CL.level - 1] * (0.8 + Math.random() * 0.5);
+    }
+  }
+  // barrels
+  for (var i = CL.barrels.length - 1; i >= 0; i--) {
+    var b = CL.barrels[i];
+    if (b.state === "roll") {
+      var g = GD[b.k]; b.x += b.vx * dt; b.rot += b.vx * dt / BR;
+      if (b.x < g.x0 - 2 || b.x > g.x1 + 2) { b.state = "air"; b.vy = 20; }
+      else b.y = g.y(b.x) - BR;
+    } else {
+      var pby = b.y; b.vy += GRAV * dt; b.y += b.vy * dt; b.x += b.vx * 0.25 * dt;
+      for (var k2 = b.k - 1; k2 >= 0; k2--) {
+        if (!onGirder(k2, b.x)) continue;
+        var gy2 = GD[k2].y(b.x) - BR;
+        if (pby <= gy2 && b.y >= gy2) { b.y = gy2; b.k = k2; b.state = "roll"; b.vx = GD[k2].down * BARREL_SPEED[CL.level - 1]; Sound.thud(); break; }
+      }
+    }
+    if (b.y > H + 30 || b.x < -30 || b.x > W + 30) { CL.barrels.splice(i, 1); continue; }
+    // collide with hero
+    var hx0 = h.x - 6, hx1 = h.x + 6, hy0 = h.y - 34, hy1 = h.y - 2;
+    var cx = Math.max(hx0, Math.min(b.x, hx1)), cy = Math.max(hy0, Math.min(b.y, hy1));
+    if (h.inv <= 0 && (b.x - cx) * (b.x - cx) + (b.y - cy) * (b.y - cy) < (BR - 3) * (BR - 3)) { barrelHit(b); CL.barrels.splice(i, 1); continue; }
+    // jumped over it
+    if (!b.jumped && h.state === "air" && h.vy !== 0 && Math.abs(b.x - h.x) < 9 && h.y < b.y - BR + 4 && h.y > b.y - BR - 60 && b.k === h.jumpFrom) {
+      b.jumped = true; G.climb.jumped++; addPoints(100); pop("+100", h.x, h.y - 46, "#FCE883"); Sound.bonus();
+    }
+  }
+  CL.pops.forEach(function (p) { p.t += dt; }); CL.pops = CL.pops.filter(function (p) { return p.t < 1; });
+}
+function pop(txt, x, y, col) { CL.pops.push({ txt: txt, x: x, y: y, col: col, t: 0 }); }
+function barrelHit(b) {
+  var h = CL.hero;
+  CL.hearts--; G.climb.hits++; h.inv = 1.6; h.hurt = 0.9; Sound.hurt();
+  pop("-1 ♥", h.x, h.y - 48, "#FF4D5E"); paintCHud(CL.hearts);
+  if (CL.hearts <= 0) {
+    CL.state = "dying"; h.state = "dead"; Sound.lose();
+    setTimeout(function () { if (CL && CL.state === "dying") cover("dead"); }, 1100);
+  }
+}
+function snap(L) {
+  var h = CL.hero, s = CL.steps[L.f];
+  L.state = "broken"; s.tries++;
+  logAnswer("climb", s.type, false, L.lab.err, stripTags(s.q), L.lab.t, s.outText, CL.level);
+  h.state = "air"; h.vy = -60; h.ignore = L.f > 0 ? L.f : -1; h.lad = null;
+  Sound.snap(); pop("SNAP!", L.x, h.y - 40, "#FF4D5E");
+  toast("<b>✗ " + esc(L.lab.t) + " snapped!</b> " + esc(WHY[L.lab.err] || "Not that one.") + (L.f > 0 ? " Down a floor you go." : ""), true);
+}
+function arrive(L) {
+  var s = CL.steps[L.f], h = CL.hero;
+  if (L.state !== "done") {
+    L.state = "done"; G.climb.floors++;
+    var first = s.tries === 0; if (first) G.climb.first++;
+    logAnswer("climb", s.type, true, null, stripTags(s.q), L.lab.t, s.outText, CL.level);
+    var pts = first ? 300 : 100; addPoints(pts); pop("+" + pts, h.x, h.y - 48, "#4CF08A"); Sound.ok();
+    CL.reached = Math.max(CL.reached, L.f + 1);
+    toast("<b>✓ Correct!</b> " + esc(s.work) + ".");
+  }
+  paintCHud(); paintQ();
+  if (h.floor === 3) reachTop();
+}
+function reachTop() {
+  var h = CL.hero; addPoints(500); pop("+500", h.x, h.y - 60, "#FCE883");
+  CL.state = "top"; CL.topT = 0; CL.barrels = []; clearKeys(); Sound.level();
+  CL.mole.state = CL.level < 3 ? "run" : "cornered"; CL.mole.t = 0;
+}
+function updateTop(dt) {
+  CL.topT += dt; var m = CL.mole;
+  m.t += dt;
+  if (m.state === "run") {
+    if (m.t > 0.5) m.x -= 190 * dt;
+    if (m.x < -60 && !m.gone) { m.gone = true; Sound.escape(); setTimeout(function () { cover("escaped"); }, 300); }
+  } else if (m.state === "cornered" && CL.topT > 1.2 && !m.shown) { m.shown = true; cover("cornered"); }
+  CL.pops.forEach(function (p) { p.t += dt; }); CL.pops = CL.pops.filter(function (p) { return p.t < 1; });
+}
+
+/* ---------- drawing ---------- */
+function drawSprite(k, cx, footY, h, flip, alpha, rot) {
+  var s = SP[k]; if (!s) return;
+  var w = h * s.w / s.h;
+  ctx.save(); ctx.globalAlpha = alpha == null ? 1 : alpha;
+  ctx.imageSmoothingEnabled = !s.pixel;
+  ctx.translate(cx, footY - (rot != null ? h / 2 : 0));
+  if (rot != null) ctx.rotate(rot);
+  if (flip) ctx.scale(-1, 1);
+  ctx.drawImage(s.el, -w / 2, rot != null ? -h / 2 : -h, w, h);
+  ctx.restore();
+}
+function rr(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+function draw() {
+  ctx.setTransform(cv.width / W, 0, 0, cv.height / H, 0, 0);
+  // background: dark lair with faint brickwork
+  ctx.fillStyle = "#0D0B1A"; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = "#151129";
+  for (var by = 0; by < H; by += 20) for (var bx = (by / 20) % 2 ? -20 : 0; bx < W; bx += 40) ctx.fillRect(bx + 1, by + 1, 38, 18);
+  ctx.font = '10px "Press Start 2P", monospace'; ctx.fillStyle = "#2EF2E0"; ctx.textAlign = "right"; ctx.textBaseline = "top";
+  ctx.fillText("LEVEL " + CL.level, W - 10, 12);
+  ctx.fillStyle = "#FF7FB0"; ctx.font = '7px "Press Start 2P", monospace'; ctx.fillText(LEVEL_INFO[CL.level - 1].name, W - 10, 28);
+  // ladders (behind girders' front edge)
+  CL.ladders.forEach(drawLadder);
+  // girders
+  GD.forEach(function (g) {
+    var y0 = g.y(g.x0), y1 = g.y(g.x1);
+    ctx.fillStyle = "#FF8243"; ctx.beginPath(); ctx.moveTo(g.x0, y0); ctx.lineTo(g.x1, y1); ctx.lineTo(g.x1, y1 + 10); ctx.lineTo(g.x0, y0 + 10); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = "#8A2E10"; ctx.lineWidth = 1.5; ctx.beginPath();
+    for (var x = g.x0; x < g.x1; x += 14) { var a = g.y(x), b = g.y(Math.min(x + 14, g.x1)); ctx.moveTo(x, a + 1); ctx.lineTo(Math.min(x + 14, g.x1), b + 9); ctx.moveTo(x, a + 9); ctx.lineTo(Math.min(x + 14, g.x1), b + 1); }
+    ctx.stroke();
+    ctx.strokeStyle = "#FCE883"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g.x0, y0); ctx.lineTo(g.x1, y1); ctx.stroke();
+  });
+  CL.ladders.forEach(drawPlaque);
+  // barrel stack and the Mole
+  var topY = GD[3].y(14);
+  drawSprite("barrelUp", 14, topY, 26); drawSprite("barrelUp", 14, topY - 26, 26);
+  var m = CL.mole, my = GD[3].y(Math.max(0, m.x));
+  if (m.state === "run") drawSprite("moleSide", m.x, my, 70, true);
+  else if (m.state === "cornered") drawSprite(CL.topT % .4 < .2 ? "mole" : "moleHurt", m.x + (CL.topT % .2 < .1 ? -2 : 2), my, 74);
+  else if (m.state === "throw") { drawSprite("moleThrow", m.x, my, 80); }
+  else drawSprite("mole", m.x, my + (Math.floor(CL.t * 2) % 2 ? -1 : 0), 74);
+  // barrels
+  CL.barrels.forEach(function (b) { drawSprite("barrel", b.x, b.y, BR * 2.1, false, 1, b.rot); });
+  // hero
+  var h = CL.hero, blink = h.inv > 0 && Math.floor(h.inv * 10) % 2 === 0;
+  var walking = (K.l || K.r) && h.state === "walk";
+  if (h.state === "climb") drawSprite("heroClimb", h.x, h.y, 48, Math.floor(h.anim / .18) % 2 === 1, blink ? .35 : 1);
+  else if (h.state === "dead" || h.hurt > 0) drawSprite("heroHurt", h.x, h.y, 50, h.face < 0, blink ? .5 : 1);
+  else drawSprite("hero", h.x, h.y - (walking && Math.floor(h.anim / .12) % 2 ? 2 : 0), 50, h.face < 0, blink ? .35 : 1);
+  // climb hint
+  if (CL.state === "play" && h.state === "walk") {
+    var L = ladderNear(h.floor, h.x, "up");
+    if (L) { ctx.font = '8px "Press Start 2P", monospace'; ctx.textAlign = "center"; ctx.fillStyle = "#FCE883"; ctx.fillText("▲ CLIMB", h.x, h.y - 60); }
+  }
+  // pop-up text
+  CL.pops.forEach(function (p) {
+    ctx.globalAlpha = 1 - p.t; ctx.font = '10px "Press Start 2P", monospace'; ctx.textAlign = "center"; ctx.fillStyle = "#0D0B1A";
+    ctx.fillText(p.txt, p.x + 1.5, p.y - p.t * 30 + 1.5); ctx.fillStyle = p.col; ctx.fillText(p.txt, p.x, p.y - p.t * 30); ctx.globalAlpha = 1;
+  });
+}
+function drawLadder(L) {
+  var by = GD[L.f].y(L.x), ty = GD[L.f + 1].y(L.x) + 10, locked = L.f > CL.reached;
+  var col = L.state === "broken" ? "#FF4D5E" : L.state === "done" ? "#4CF08A" : locked ? "#3A3460" : "#2EF2E0";
+  ctx.strokeStyle = col; ctx.lineWidth = 3;
+  var gapTop = by - (by - ty) * 0.62, gapBot = by - (by - ty) * 0.38;
+  ctx.beginPath();
+  [-9, 9].forEach(function (dx) {
+    if (L.state === "broken") { ctx.moveTo(L.x + dx, by); ctx.lineTo(L.x + dx + (dx < 0 ? -2 : 2), gapBot); ctx.moveTo(L.x + dx + (dx < 0 ? 3 : -3), gapTop); ctx.lineTo(L.x + dx, ty); }
+    else { ctx.moveTo(L.x + dx, by); ctx.lineTo(L.x + dx, ty); }
+  });
+  ctx.stroke();
+  ctx.lineWidth = 2; ctx.beginPath();
+  for (var y = by - 8; y > ty + 2; y -= 11) { if (L.state === "broken" && y < gapBot && y > gapTop) continue; ctx.moveTo(L.x - 9, y); ctx.lineTo(L.x + 9, y); }
+  ctx.stroke();
+}
+function drawPlaque(L) {
+  var by = GD[L.f].y(L.x), ty = GD[L.f + 1].y(L.x) + 10, my = (by + ty) / 2 - 6, locked = L.f > CL.reached;
+  var txt = locked ? "?" : L.state === "done" ? "✓ " + L.lab.t : L.lab.t;
+  var fs = 14; ctx.font = "800 " + fs + 'px "Open Sans", system-ui, sans-serif';
+  var tw = ctx.measureText(txt).width;
+  while (tw > 92 && fs > 9) { fs--; ctx.font = "800 " + fs + 'px "Open Sans", system-ui, sans-serif'; tw = ctx.measureText(txt).width; }
+  var w = Math.max(30, tw + 12), hgt = fs + 10, x = L.x - w / 2, y = my - hgt / 2;
+  var fill = locked ? "#2A2448" : L.state === "done" ? "#4CF08A" : L.state === "broken" ? "#5A1E2A" : "#FCE883";
+  ctx.fillStyle = "#0D0B1A"; rr(x + 2, y + 2, w, hgt, 5); ctx.fill();
+  ctx.fillStyle = fill; rr(x, y, w, hgt, 5); ctx.fill();
+  ctx.strokeStyle = locked ? "#4A4470" : "#0D0B1A"; ctx.lineWidth = 2; rr(x, y, w, hgt, 5); ctx.stroke();
+  ctx.fillStyle = locked ? "#8C86A8" : L.state === "broken" ? "#FF9AA4" : "#1F2A2E"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillText(txt, L.x, my + 1);
+  if (L.state === "broken") { ctx.strokeStyle = "#FF4D5E"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x + 4, my + 1); ctx.lineTo(x + w - 4, my + 1); ctx.stroke(); }
+}
+
+/* =================== BOSS FIGHT =================== */
+var B = null, raf = 0;
+function paintBossSprites() {
+  if (!$("b-hero")) return;
+  $("b-hero").innerHTML = domArt("hero"); $("b-hero").classList.toggle("pic", SP.hero.ok);
+  $("b-mon").innerHTML = domArt("moleSide"); $("b-mon").classList.toggle("pic", SP.moleSide.ok);
+  $("b-bolt").innerHTML = domArt("barrel");
+}
+paintBossSprites();
+$("b-name").textContent = BOSS_NAME;
+$("b-charge-lbl").textContent = "THE MOLE IS CHARGING";
+var hurtTimers = {};
+function showHurt(id, key, base) {
+  var img = $(id).querySelector("img"); if (!img || !SP[key].ok) return;
+  clearTimeout(hurtTimers[id]); img.src = IMG[key];
+  hurtTimers[id] = setTimeout(function () { var i = $(id).querySelector("img"); if (i) i.src = IMG[base]; }, HURT_MS);
+}
+function startBoss() {
+  G.attempt++;
+  B = { hp: HITS_TO_WIN[G.lv], maxhp: HITS_TO_WIN[G.lv], hearts: HEARTS, max: HEARTS, n: 0, correct: 0, phase2: false, combo: 0, bestCombo: 0, bag: [], last: null, t0: Date.now() };
+  show("scr-boss"); Music.stop(); Music.play();
+  $("b-hero").className = "sprite hero-sp"; $("b-mon").className = "sprite mon-sp";
+  clearTimeout(hurtTimers["b-hero"]); clearTimeout(hurtTimers["b-mon"]); paintBossSprites();
+  paintBossHud(); nextQ();
+}
+function paintBossHud(breakIdx) {
+  $("b-hearts").innerHTML = heartsHTML(B.hearts, B.max, breakIdx);
+  var p = Math.max(0, B.hp) / B.maxhp * 100;
+  $("b-left").textContent = "· " + Math.max(0, B.hp) + (B.hp === 1 ? " HIT" : " HITS") + " LEFT";
+  $("b-hp").style.width = p + "%";
+  $("b-hp").className = p <= 30 ? "low" : "";
+}
+function drawQType() {
+  var pool = BOSS_POOL[G.lv][B.phase2 ? "p2" : "p1"];
+  if (!B.bag.length) B.bag = shuffle(pool);
+  var k = B.bag.shift();
+  if (k === B.last && B.bag.length) { B.bag.push(k); k = B.bag.shift(); }
+  B.last = k; return k;
+}
+function nextQ() {
+  if (B.hp <= 0 || B.hearts <= 0) return bossEnd();
+  $("b-fb").hidden = true; $("b-bolt").classList.remove("fly");
+  var q = null, tries = 0;
+  while (!q && tries++ < 10) { try { q = BQ[drawQType()](); if (q.opts.length < 4) q = null; } catch (e) { q = null; } }
+  B.q = q; B.n++;
+  $("b-qtype").textContent = (B.phase2 ? "PHASE 2 · " : "") + "ATTACK " + B.n + " · " + TYPES[q.type].toUpperCase();
+  $("b-qeq").hidden = !q.eq; $("b-qeq").innerHTML = q.eq;
+  $("b-qtext").innerHTML = q.text;
+  $("b-opts").innerHTML = q.opts.map(function (o, i) { return '<button type="button" class="qopt" data-i="' + i + '"><span class="k">' + "ABCD"[i] + '</span><span class="tx">' + esc(o.t) + "</span></button>"; }).join("");
+  B.t0q = performance.now(); B.secs = BOSS_SECS[G.lv]; B.locked = false;
+  tick();
+}
+function tick() {
+  var el = (performance.now() - B.t0q) / 1000, left = Math.max(0, B.secs - el);
+  $("b-cbar").style.width = Math.min(100, el / B.secs * 100) + "%";
+  $("b-secs").textContent = Math.ceil(left);
+  $("b-charge").classList.toggle("warn", left <= 10);
+  if (left <= 0) { answer(-1); return; }
+  raf = requestAnimationFrame(tick);
+}
+function stopBossTimer() { cancelAnimationFrame(raf); }
+$("b-opts").addEventListener("click", function (e) { var b = e.target.closest(".qopt"); if (b && !B.locked) answer(+b.dataset.i); });
+function floatText(txt, onBoss, hurt) {
+  var s = document.createElement("span"); s.className = "dmg" + (hurt ? " hurt" : ""); s.textContent = txt;
+  s.style[onBoss ? "right" : "left"] = onBoss ? "12%" : "8%"; s.style.top = "30%";
+  $("b-stage").appendChild(s); setTimeout(function () { s.remove(); }, 1100);
+}
+function retrigger(el, cls) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+function answer(i) {
+  B.locked = true; stopBossTimer();
+  var q = B.q, el = (performance.now() - B.t0q) / 1000, o = i >= 0 ? q.opts[i] : null, ok = !!(o && o.ok);
+  var btns = $("b-opts").querySelectorAll(".qopt");
+  q.opts.forEach(function (op, j) { btns[j].disabled = true; if (op.ok) btns[j].classList.add("right"); });
+  if (o && !ok) btns[i].classList.add("wrong");
+  var err = ok ? null : (o ? o.err : "timeout"), msg;
+  if (ok) {
+    B.correct++; B.combo++; B.bestCombo = Math.max(B.bestCombo, B.combo);
+    var crit = el <= CRIT_SECS;
+    B.hp = Math.max(0, B.hp - 1);
+    addPoints((crit ? 150 : 100) + Math.round(Math.max(0, B.secs - el)) * 2);
+    retrigger($("b-hero"), "atk"); retrigger($("b-bolt"), "fly");
+    setTimeout(function () { showHurt("b-mon", "moleHurt", "moleSide"); retrigger($("b-mon"), "hit"); floatText(crit ? "CRITICAL!" : "HIT!", true); Sound.hit(); paintBossHud(); }, 380);
+    msg = '<span class="ans">' + (crit ? "Critical hit! Speed bonus." : "Direct hit!") + "</span> " + (B.hp > 0 ? B.hp + " more to go." : "") + '<br><span class="work">' + esc(q.work) + "</span>";
+  } else {
+    B.combo = 0; B.hearts--;
+    retrigger($("b-mon"), "atk");
+    setTimeout(function () { showHurt("b-hero", "heroHurt", "hero"); retrigger($("b-hero"), "hit"); retrigger($("b-flash"), "on"); floatText("-1 ♥", false, true); Sound.hurt(); paintBossHud(B.hearts); }, 300);
+    msg = (err === "timeout" ? "The Mole struck first. You ran out of time." : "<b>" + esc(ERR[err].label) + ".</b> " + esc(ERR[err].tip)) +
+      '<br><span class="ans">Answer: ' + esc(q.right) + '</span><br><span class="work">' + esc(q.work) + "</span>";
+  }
+  logAnswer("boss", q.type, ok, err, stripTags(q.text).replace(/\s*\(Ar:.*\)\s*$/, ""), o ? o.t : "(no answer)", q.right, null);
+  if (!B.phase2 && B.hp > 0 && B.hp <= B.maxhp / 2) {
+    B.phase2 = true; B.bag = [];
+    setTimeout(function () { var p = document.createElement("div"); p.className = "phase"; p.textContent = "THE MOLE IS ANGRY!"; $("b-stage").appendChild(p); setTimeout(function () { p.remove(); }, 2200); }, 700);
+  }
+  var over = B.hp <= 0 || B.hearts <= 0;
+  $("b-fb").hidden = false; $("b-fb").className = "qfb" + (ok ? "" : " no");
+  $("b-fb-msg").innerHTML = msg;
+  $("b-next").textContent = over ? (B.hp <= 0 ? "FINISH HIM ▶" : "CONTINUE ▶") : "NEXT ATTACK ▶";
+  if (window.matchMedia("(max-width: 759px)").matches) setTimeout(function () { $("b-fb").scrollIntoView({ behavior: "smooth", block: "nearest" }); }, 200);
+}
+$("b-next").addEventListener("click", function () { if (B.hp <= 0 || B.hearts <= 0) bossEnd(); else nextQ(); });
+function bossEnd() {
+  stopBossTimer(); Music.fadeOut(); Calc.close();
+  var win = B.hp <= 0;
+  B.win = win;
+  if (win) $("b-mon").classList.add("dead"); else $("b-hero").classList.add("dead");
+  finish(true); // log every attempt, so retries are recorded too
+  setTimeout(function () {
+    show("scr-bend");
+    $("scr-bend").className = "bend" + (win ? "" : " lose");
+    $("be-title").textContent = win ? "VICTORY!" : "YOU DIED";
+    $("be-sprite").innerHTML = domArt(win ? "hero" : "heroHurt");
+    $("be-sprite").className = "sprite" + (win || SP.heroHurt.ok ? "" : " down");
+    $("be-msg").textContent = win ? "The Mole Scientist is beaten and your research is back! " + B.correct + " hits in " + B.n + " attacks." :
+      "The Mole Scientist knocked you out. You landed " + B.correct + " of " + B.maxhp + " hits. Try again: you start straight at the boss.";
+    $("be-retry").hidden = win;
+    if (win) { Sound.win(); Confetti.go(); } else Sound.lose();
+  }, win ? 700 : 500);
+}
+$("be-go").addEventListener("click", function () { Confetti.stop(); finish(false, true); });
+$("be-retry").addEventListener("click", function () { startBoss(); });
+
+/* =================== CALCULATOR =================== */
+var Calc = {
+  el: $("calc"), ex: "", ans: 0, done: false, opener: null,
+  toggle: function (btnId) { if (this.el.hidden) this.open(btnId); else this.close(); },
+  open: function (btnId) { this.el.hidden = false; this.opener = btnId; ["c-calc", "b-calc"].forEach(function (id) { $(id).setAttribute("aria-pressed", "true"); }); clearKeys(); this.paint(); },
+  close: function () { if (!this.el) return; this.el.hidden = true; ["c-calc", "b-calc"].forEach(function (id) { if ($(id)) $(id).setAttribute("aria-pressed", "false"); }); },
+  press: function (c) {
+    Sound.tap();
+    if (c === "AC") { this.ex = ""; this.done = false; this.res = null; }
+    else if (c === "DEL") { this.ex = this.ex.replace(/(×10\^|.)$/, ""); this.done = false; }
+    else if (c === "=") { var v = this.eval(this.ex); this.res = v; if (isFinite(v)) { this.ans = v; } this.done = true; }
+    else {
+      if (this.done) { this.ex = /[+−×÷^]/.test(c) || c === "×10^" ? "Ans" : ""; this.done = false; this.res = null; }
+      if (c === "ANS") c = "Ans";
+      if (c === "−n") c = "−";
+      this.ex += c;
+    }
+    this.paint();
+  },
+  paint: function () {
+    $("calc-ex").textContent = this.ex.replace(/\^/g, "^");
+    $("calc-rs").textContent = this.done ? this.fmt(this.res) : (this.ex ? " " : "0");
+  },
+  fmt: function (v) {
+    if (v == null || !isFinite(v)) return "Error";
+    if (v === 0) return "0";
+    var a = Math.abs(v);
+    if (a >= 1e10 || a < 1e-6) { var e = Math.floor(Math.log10(a)), m = v / Math.pow(10, e); return (+m.toPrecision(6)) + " × 10" + supStr(e); }
+    return String(+v.toPrecision(10));
+  },
+  eval: function (s) {
+    var t = s.replace(/Ans/g, "(" + this.ans + ")").replace(/×10\^/g, "E"), i = 0;
+    function peek() { return t[i]; }
+    function number() { var m = /^(\d+\.?\d*|\.\d+)(e[+-]?\d+)?/.exec(t.slice(i)); if (!m) throw 0; i += m[0].length; return parseFloat(m[0]); }
+    function base() {
+      var c = peek();
+      if (c === "(") { i++; var v = expr(); if (peek() === ")") i++; return v; }
+      if (c === "−" || c === "-") { i++; return -power(); }
+      return number();
+    }
+    function power() { var v = base(); while (peek() === "E") { i++; v = v * Math.pow(10, signed()); } if (peek() === "^") { i++; v = Math.pow(v, power()); } return v; }
+    function signed() { if (peek() === "−" || peek() === "-") { i++; return -number(); } if (peek() === "(") return base(); return number(); }
+    function term() { var v = power(); while (peek() === "×" || peek() === "÷" || peek() === "(") { var op = peek(); if (op !== "(") i++; var r = power(); v = op === "÷" ? v / r : v * r; } return v; }
+    function expr() { var v = term(); while (peek() === "+" || peek() === "−" || peek() === "-") { var op = t[i++]; var r = term(); v = op === "+" ? v + r : v - r; } return v; }
+    try { var v = expr(); if (i < t.length) return NaN; return v; } catch (e) { return NaN; }
+  },
+  key: function (e) {
+    var map = { "*": "×", x: "×", "/": "÷", "-": "−", "+": "+", "(": "(", ")": ")", ".": ".", "^": "^", Enter: "=", "=": "=", Backspace: "DEL", Delete: "AC" };
+    if (e.key === "Escape") { this.close(); e.preventDefault(); return true; }
+    if (/^[0-9]$/.test(e.key)) { this.press(e.key); e.preventDefault(); return true; }
+    if (map[e.key]) { this.press(map[e.key]); e.preventDefault(); return true; }
+    if (e.key === "e" || e.key === "E") { this.press("×10^"); e.preventDefault(); return true; }
+    if (e.key === "c" || e.key === "C") { this.close(); e.preventDefault(); return true; }
+    return false;
+  }
+};
+$("calc-keys").addEventListener("click", function (e) { var b = e.target.closest("button[data-c]"); if (b) Calc.press(b.dataset.c); });
+$("calc-x").addEventListener("click", function () { Calc.close(); });
+$("c-calc").addEventListener("click", function () { Calc.toggle("c-calc"); this.blur(); });
+$("b-calc").addEventListener("click", function () { Calc.toggle("b-calc"); });
+
+/* =================== RESULTS =================== */
+function finish(silent, showIt) {
+  var secs = (Date.now() - G.t0) / 1000, S = { secs: secs };
+  var log = G.log.filter(function (x) { return x.phase === "climb" || x.attempt === G.attempt; }); // climb + this boss attempt
+  S.correct = log.filter(function (x) { return x.ok; }).length; S.total = log.length;
+  var pctv = S.total ? Math.round(S.correct / S.total * 100) : 0; S.pct = pctv;
+  var byType = {}; Object.keys(TYPES).forEach(function (k) { byType[k] = [0, 0]; });
+  log.forEach(function (x) { byType[x.type][1]++; if (x.ok) byType[x.type][0]++; });
+  var errs = {}; log.forEach(function (x) { if (!x.ok) errs[x.err] = (errs[x.err] || 0) + 1; });
+  var errKeys = Object.keys(errs).sort(function (a, b) { return errs[b] - errs[a]; });
+  var wrongTypes = Object.keys(byType).filter(function (k) { return byType[k][1] > byType[k][0]; }).sort(function (a, b) { return (byType[b][1] - byType[b][0]) - (byType[a][1] - byType[a][0]); });
+  S.byType = byType; S.errs = errs; S.errKeys = errKeys; S.wrongTypes = wrongTypes; S.log = log;
+  if (!silent || showIt) paintResults(S);
+  if (silent) sendResults(S);
+  var best = load("best", {}); if (best[G.lv] == null || G.points > best[G.lv]) { best[G.lv] = G.points; store("best", best); }
+  return S;
+}
+function paintResults(S) {
+  show("scr-result");
+  $("res-ring").style.setProperty("--p", S.pct); $("res-pct").textContent = S.pct + "%";
+  $("res-title").textContent = B && B.win ? "Research recovered!" : "The Mole got away… for now";
+  $("res-sub").textContent = "Climb: " + G.climb.first + " of " + G.climb.floors + " ladders right first time, " + G.climb.jumped + " barrels jumped. Boss: " + (B ? B.correct + " hits from " + B.n + " attacks" + (G.attempt > 1 ? " (attempt " + G.attempt + ")" : "") : "not reached") + ".";
+  $("res-correct").textContent = S.correct + "/" + S.total;
+  $("res-acc").textContent = S.pct + "%";
+  $("res-time").textContent = fmtTime(S.secs);
+  $("res-points").textContent = G.points;
+  $("res-bars").innerHTML = Object.keys(TYPES).filter(function (k) { return S.byType[k][1]; }).map(function (k) {
+    var b = S.byType[k], p = Math.round(b[0] / b[1] * 100);
+    return '<div class="bar-row"><span>' + esc(TYPES[k]) + '</span><div class="bar"><i class="' + (p < 60 ? "low" : "") + '" style="width:' + p + '%"></i></div><span class="n">' + b[0] + "/" + b[1] + "</span></div>";
+  }).join("");
+  $("res-weak").innerHTML = S.errKeys.length ? S.errKeys.slice(0, 3).map(function (k) { return "<li><b>" + esc(ERR[k].label) + " ×" + S.errs[k] + "</b><span>" + esc(ERR[k].tip) + "</span></li>"; }).join("") :
+    '<li class="good"><b>No mistakes!</b><span>Every answer was right first time.</span></li>';
+  var wrong = S.log.filter(function (x) { return !x.ok; });
+  $("res-review").innerHTML = wrong.length ? wrong.slice(0, 8).map(function (x) {
+    return '<li><span class="tag">' + (x.phase === "climb" ? "Climb L" + x.level : "Boss") + " · " + esc(TYPES[x.type]) + "</span><br>" + esc(x.text) + '<br><span class="you">You: ' + esc(x.picked) + (x.err && ERR[x.err] ? " (" + esc(ERR[x.err].label.toLowerCase()) + ")" : "") + '</span><br><span class="key">Answer: ' + esc(x.right) + "</span></li>";
+  }).join("") : "<li>Nothing to review. Every one was right.</li>";
+}
+function buildPayload(S) {
+  var lvName = G.lv === "hard" ? "Pure Chemistry" : "Combined Science";
+  var types = Object.keys(TYPES).filter(function (k) { return S.byType[k][1]; }).map(function (k) { return TYPES[k] + " " + S.byType[k][0] + "/" + S.byType[k][1]; }).join(", ");
+  var errs = S.errKeys.length ? S.errKeys.map(function (k) { return ERR[k].label + " x" + S.errs[k]; }).join("; ") : "none";
+  var most = S.wrongTypes.length ? S.wrongTypes.slice(0, 3).map(function (k) { return TYPES[k]; }).join(", ") : "none";
+  var summary = "Boss attempt " + G.attempt + " (" + (B.win ? "won" : "lost") + ") | Level: " + lvName +
+    " | Accuracy: " + S.pct + "% | Wrong most: " + most +
+    " | Climb: ladders first try " + G.climb.first + "/" + G.climb.floors + ", barrels jumped " + G.climb.jumped + ", barrel hits " + G.climb.hits + ", level restarts " + G.climb.restarts +
+    " | Boss: hits " + B.correct + "/" + B.n + " (needed " + B.maxhp + "), best combo " + B.bestCombo +
+    " | By conversion: " + types + " | Errors: " + errs;
+  var wrong = S.log.filter(function (x) { return !x.ok; }).map(function (x) {
+    return (x.phase === "climb" ? "[Climb L" + x.level + "] " : "[Boss] ") + TYPES[x.type] + ": " + x.text + " → picked " + x.picked + " (" + (ERR[x.err] ? ERR[x.err].label : x.err) + "), answer " + x.right;
+  }).join(" | ");
+  return {
+    course: SHEET_TAB, chapter: "Mole Mayhem · Boss attempt " + G.attempt + " (" + (B.win ? "won" : "lost") + ") · " + lvName,
+    name: G.student.name, cls: G.student.cls, reg: G.student.reg,
+    score: S.correct, total: S.total, wrong: wrong || "None",
+    time: Math.round(S.secs), points: G.points, summary: summary
+  };
+}
+function post(payload) { return fetch(SUBMIT_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) }); }
+function sendResults(S) {
+  var payload = G.payload = buildPayload(S), box = $("send"), msg = $("send-msg"), btn = $("btn-resend");
+  box.className = "send span"; btn.hidden = true;
+  if (!SUBMIT_URL) { msg.textContent = "Results not sent (no Google Sheet link set up)."; return; }
+  msg.textContent = "Sending your results to Ms Khoo…";
+  post(payload).then(function () { msg.textContent = "✓ Sent! Ms Khoo has your results."; })
+    .catch(function () { box.className = "send span err"; msg.textContent = "Couldn't send. Check your internet, then tap Try again."; btn.hidden = false; });
+}
+$("btn-resend").addEventListener("click", function () {
+  var box = $("send"); $("btn-resend").hidden = true; $("send-msg").textContent = "Sending…";
+  post(G.payload).then(function () { box.className = "send span"; $("send-msg").textContent = "✓ Sent! Ms Khoo has your results."; })
+    .catch(function () { $("send-msg").textContent = "Still couldn't send. Try again when you're online."; $("btn-resend").hidden = false; });
+});
+$("btn-again").addEventListener("click", function () { Confetti.stop(); newSession(G.student); startClimb(); });
+$("btn-home").addEventListener("click", function () { Confetti.stop(); show("scr-start"); paintStart(); });
+
+/* =================== CONFETTI =================== */
+var Confetti = {
+  c: $("confetti"), p: [], on: false,
+  go: function () {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var c = this.c, w = c.width = innerWidth, h = c.height = innerHeight, cols = ["#FF8243", "#FFC0CB", "#FCE883", "#069494", "#1F2A2E"];
+    c.hidden = false; this.on = true; this.p = [];
+    for (var i = 0; i < 110; i++) this.p.push({ x: Math.random() * w, y: -Math.random() * h, s: 6 + Math.random() * 8, v: 2 + Math.random() * 3, a: Math.random() * 6, col: cols[i % cols.length] });
+    var self = this, cx = c.getContext("2d"), t0 = performance.now();
+    (function frame(t) {
+      if (!self.on) return;
+      cx.clearRect(0, 0, w, h);
+      self.p.forEach(function (p) { p.y += p.v; p.a += .1; cx.fillStyle = p.col; cx.fillRect(p.x + Math.sin(p.a) * 6, p.y, p.s, p.s * .6); });
+      if (t - t0 < 4000) requestAnimationFrame(frame); else self.stop();
+    })(t0);
+  },
+  stop: function () { this.on = false; this.c.hidden = true; }
+};
+
+if (/debug/.test(location.hash)) window.__MM = { CL: function () { return CL; }, B: function () { return B; }, G: G, makeChain: makeChain, BQ: BQ, BOSS_POOL: BOSS_POOL, mrOf: mrOf, sf: sf, K: K, Calc: Calc, startBoss: startBoss, finish: finish };
+
+})();
+</script>
+</body>
+</html>
