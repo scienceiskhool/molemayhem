@@ -134,13 +134,13 @@ body.dark footer a { color: var(--neon-teal); }
 .calc-btn svg { width: 16px; height: 16px; }
 .calc-btn[aria-pressed="true"] { background: var(--neon-yellow); color: var(--night); }
 .qstrip { border: 3px solid var(--neon-teal); border-radius: 6px; background: var(--night-2); padding: 8px 12px; display: flex; flex-direction: column; gap: 4px; min-height: 92px; }
-.qhead { margin: 0; font-family: var(--pixel); font-size: .52rem; color: var(--neon-yellow); line-height: 1.6; }
-.qtext { margin: 0; font-weight: 700; font-size: 1rem; line-height: 1.4; }
+.qhead { margin: 0; font-family: var(--pixel); font-size: .62rem; color: var(--neon-yellow); line-height: 1.6; }
+.qtext { margin: 0; font-weight: 700; font-size: 1.25rem; line-height: 1.4; }
 .qtext b { color: var(--neon-yellow); }
-.qeqline { font-weight: 700; font-size: .9rem; color: var(--neon-teal); }
+.qeqline { font-weight: 700; font-size: 1.08rem; color: var(--neon-teal); }
 .st { opacity: .75; font-weight: 600; font-size: .85em; }
-.qhint { margin: 0; font-size: .82rem; font-weight: 600; color: #B8B2D6; }
-.crumb { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; font-size: .78rem; font-weight: 700; color: #B8B2D6; }
+.qhint { margin: 0; font-size: 1rem; font-weight: 600; color: #B8B2D6; }
+.crumb { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; font-size: .92rem; font-weight: 700; color: #B8B2D6; }
 .crumb .q { border: 2px solid var(--night-3); border-radius: 6px; padding: 0 6px; color: #fff; white-space: nowrap; }
 .crumb .q.now { border-color: var(--neon-yellow); color: var(--neon-yellow); }
 .cwrap { position: relative; align-self: center; line-height: 0; }
@@ -222,9 +222,9 @@ body.touch .pad { display: grid; } body.touch .keys { display: none; }
 @keyframes blink { 50% { opacity: 0; } }
 .qbox { border: 3px solid #fff; border-radius: 6px; background: var(--night); padding: 14px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 0 0 3px var(--night-3); }
 .qtop { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-.qtype { margin: 0; font-family: var(--pixel); font-size: .6rem; color: var(--neon-yellow); line-height: 1.6; }
-.bq { margin: 0; font-weight: 700; font-size: 1.02rem; }
-.qeq { background: var(--night-2); border: 2px dashed var(--night-3); border-radius: 6px; padding: 10px; font-weight: 700; font-size: 1rem; line-height: 1.7; }
+.qtype { margin: 0; font-family: var(--pixel); font-size: .68rem; color: var(--neon-yellow); line-height: 1.6; }
+.bq { margin: 0; font-weight: 700; font-size: 1.25rem; line-height: 1.45; }
+.qeq { background: var(--night-2); border: 2px dashed var(--night-3); border-radius: 6px; padding: 10px; font-weight: 700; font-size: 1.15rem; line-height: 1.7; }
 .qopts { display: grid; grid-template-columns: 1fr; gap: 10px; }
 .qopt { display: flex; gap: 10px; align-items: center; text-align: left; border: 3px solid var(--neon-teal); background: var(--night-2); color: #fff; border-radius: 6px; padding: 10px 12px; font-weight: 700; font-size: 1.05rem; box-shadow: 0 4px 0 var(--neon-teal); line-height: 1.6; transition: transform .08s, box-shadow .08s; }
 .qopt:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 var(--neon-teal); }
@@ -369,19 +369,12 @@ canvas#confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-
       </div>
       <div class="modes">
         <div class="mode-card"><b>The climb</b><span>3 levels, 3 floors each. Only one ladder per floor holds. The rest snap!</span></div>
-        <div class="mode-card dark"><b>BOSS FIGHT</b><span>3 hearts. Land 6 hits (8 for Pure Chemistry) before the Mole Scientist knocks you out.</span></div>
+        <div class="mode-card dark"><b>BOSS FIGHT</b><span>3 hearts. Land 6 hits before the Mole Scientist knocks you out.</span></div>
       </div>
     </div>
 
     <form class="card form" id="form-start" novalidate>
       <h2>Ready, scientist?</h2>
-      <div class="grp">
-        <span id="lbl-course">Course</span>
-        <div class="seg" role="group" aria-labelledby="lbl-course">
-          <button type="button" class="chip" id="lv-easy" data-lv="easy" aria-pressed="true">Combined Science<small>Moles, gases, solutions</small></button>
-          <button type="button" class="chip" id="lv-hard" data-lv="hard" aria-pressed="false">Pure Chemistry<small>Adds % yield, % purity</small></button>
-        </div>
-      </div>
       <div class="fields">
         <label class="f full" for="in-name">Name<input id="in-name" name="name" maxlength="60" autocomplete="name" required></label>
         <label class="f" for="in-cls">Class<select id="in-cls" name="cls" required><option value="">Choose…</option></select></label>
@@ -517,7 +510,7 @@ var HITS_TO_WIN = { easy: 6, hard: 8 };   // boss hits needed (easy = Combined S
 var BOSS_SECS = { easy: 75, hard: 60 };   // seconds before the Mole attacks (calculations take longer than Ionic Quest)
 var CRIT_SECS = 25;                       // answering within this many seconds is a critical hit (bonus points only)
 var HEARTS = 3;                           // hearts in each climb level and in the boss fight
-var BARREL_GAP = [3.6, 3.0, 2.5];         // seconds between barrels on levels 1, 2, 3
+var BARREL_GAP = [5.2, 4.2, 2.5];         // seconds between barrels on levels 1, 2, 3 (bigger = slower)
 var BARREL_SPEED = [70, 85, 100];         // barrel roll speed on levels 1, 2, 3
 var HURT_MS = 2000;                       // boss fight: how long the hurt images show
 var IMG = {                               // sprite files (same folder). Missing files fall back to pixel art.
@@ -574,6 +567,7 @@ function arHint(fs) {
   fs.forEach(function (f) { Object.keys(parseF(f)).forEach(function (e) { if (!seen[e]) { seen[e] = 1; out.push(e); } }); });
   return "A<span class=\"sub\">r</span>: " + out.map(function (e) { return e + " = " + AR[e]; }).join(", ");
 }
+function mrHint(fs) { return fs.map(function (f) { return "M<span class=\"sub\">r</span> of " + fx(f) + " = " + mrOf(f); }).join(", "); }
 // typical wrong Mr values for a formula
 function wrongMrs(f) {
   var c = parseF(f), right = mrOf(f), out = [];
@@ -842,63 +836,64 @@ function Q(type, text, eq, right, unit, wrongs, work, fmt) { var o = buildOpts(r
 var pct = function (v) { return sf(v) + " %"; };
 var BQ = {
   m2n: function () { var f = pick(SOLUTES.concat(GASES, BRACKETS.slice(0, 4))), n = pick(NMOL), M = mrOf(f), m = n * M;
-    return Q("m2n", "How many moles are there in <b>" + gv(m) + " g</b> of " + fx(f) + "? <span class=\"st\">(" + arHint([f]) + ")</span>", "", n, "mol",
+    return Q("m2n", "How many moles are there in <b>" + gv(m) + " g</b> of " + fx(f) + "? <span class=\"st\">(" + mrHint([f]) + ")</span>", "", n, "mol",
       [{ v: m * M, err: "inv" }, { v: m / wrongMrs(f)[0], err: "mr" }, { v: m / pick(wrongMrs(f)), err: "mr" }, { v: m / 24, err: "konst" }], gv(m) + " ÷ " + M + " = " + sf(n) + " mol"); },
   m2v: function () { var f = pick(GASES), n = pick(NMOL), M = mrOf(f), m = n * M, v = n * VM;
-    return Q("n2v", "What volume does <b>" + gv(m) + " g</b> of " + fx(f) + " gas occupy at r.t.p.? <span class=\"st\">(" + arHint([f]) + ")</span>", "", v, "dm³",
+    return Q("n2v", "What volume does <b>" + gv(m) + " g</b> of " + fx(f) + " gas occupy at r.t.p.? <span class=\"st\">(" + mrHint([f]) + ")</span>", "", v, "dm³",
       [{ v: n * 22.4, err: "v224" }, { v: m / wrongMrs(f)[0] * VM, err: "mr" }, { v: n / VM, err: "inv" }, { v: m * M / VM, err: "inv" }, { v: n * 24000, err: "unit" }],
       "n = " + gv(m) + " ÷ " + M + " = " + sf(n) + " mol; V = " + sf(n) + " × 24 = " + sf(v) + " dm³"); },
   v2m: function () { var f = pick(GASES), n = pick([0.025, 0.05, 0.1, 0.125, 0.15, 0.2, 0.25]), M = mrOf(f), v = n * 24000, m = n * M;
-    return Q("v2n", "What is the mass of <b>" + gv(v) + " cm³</b> of " + fx(f) + " gas at r.t.p.? <span class=\"st\">(" + arHint([f]) + ")</span>", "", m, "g",
+    return Q("v2n", "What is the mass of <b>" + gv(v) + " cm³</b> of " + fx(f) + " gas at r.t.p.? <span class=\"st\">(" + mrHint([f]) + ")</span>", "", m, "g",
       [{ v: v / 24 * M, err: "unit" }, { v: v / 22400 * M, err: "v224" }, { v: n * wrongMrs(f)[0], err: "mr" }, { v: n / M, err: "inv" }],
       "n = " + gv(v) + " ÷ 24 000 = " + sf(n) + " mol; mass = " + sf(n) + " × " + M + " = " + sf(m) + " g"); },
-  part: function () { var f = pick(["CO2", "H2O", "NH3", "CH4", "SO2", "O2"]), n = pick([0.1, 0.2, 0.25, 0.5, 2]), M = mrOf(f), m = n * M, k = atomsIn(f), atoms = Math.random() < .45;
-    var ans = n * LA * (atoms ? k : 1);
-    return Q("np", "How many <b>" + (atoms ? "atoms" : "molecules") + "</b> are there in <b>" + gv(m) + " g</b> of " + fx(f) + "? <span class=\"st\">(" + arHint([f]) + ", L = 6.02 × 10²³)</span>", "", ans, "",
-      [{ v: atoms ? n * LA : n * LA * k, err: "atoms" }, { v: n / LA, err: "inv" }, { v: m * LA, err: "konst" }, { v: m / wrongMrs(f)[0] * LA * (atoms ? k : 1), err: "mr" }],
-      "n = " + gv(m) + " ÷ " + M + " = " + sf(n) + " mol; molecules = " + sf(n) + " × " + LTXT + " = " + sf(n * LA) + (atoms ? "; atoms = × " + k + " = " + sf(ans) : "")); },
+  part: function () { var f = pick(["CO2", "H2O", "NH3", "CH4", "SO2", "O2"]), n = pick([0.1, 0.2, 0.25, 0.5, 2]), M = mrOf(f), m = n * M, k = atomsIn(f), ans = n * LA;
+    return Q("np", "How many <b>molecules</b> are there in <b>" + gv(m) + " g</b> of " + fx(f) + "? <span class=\"st\">(" + mrHint([f]) + ", L = 6.02 × 10²³)</span>", "", ans, "",
+      [{ v: ans * k, err: "atoms" }, { v: n / LA, err: "inv" }, { v: m * LA, err: "konst" }, { v: m / wrongMrs(f)[0] * LA, err: "mr" }],
+      "n = " + gv(m) + " ÷ " + M + " = " + sf(n) + " mol; molecules = " + sf(n) + " × " + LTXT + " = " + sf(ans)); },
   rmass: function () { var rx = pick(rxWith(function (r) { return solidR(r).length && massP(r).filter(function (x) { return solidR(r).indexOf(x) < 0; }).length; }));
     var A = solidR(rx)[0], Bs = massP(rx).filter(function (x) { return x !== A; }).concat(rx.L.filter(function (x) { return x[2] === "g" && x[1] !== "CO"; }).map(function (x) { return x[1]; })), B = pick(Bs);
-    var a = sp(rx, A).c, b = sp(rx, B).c, nA = nFor(A), mA = nA * mrOf(A), nB = nA * b / a, MB = mrOf(B), mB = nB * MB, made = sp(rx, B).side === "R";
-    return Q("ratio", "What mass of " + fx(B) + (made ? " is made from " : " reacts with ") + "<b>" + gv(mA) + " g</b> of " + fx(A) + "? <span class=\"st\">(" + arHint([A, B]) + ")</span>", eqHTML(rx), mB, "g",
-      [{ v: nA * MB, err: a !== b ? "ratio" : "masscmp" }, { v: nA * a / b * MB, err: "ratioinv" }, { v: nB * wrongMrs(B)[0], err: "mr" }, { v: mA * b / a, err: "masscmp" }],
-      "n(" + fxt(A) + ") = " + gv(mA) + " ÷ " + mrOf(A) + " = " + sf(nA) + " mol; n(" + fxt(B) + ") = × " + b + "/" + a + " = " + sf(nB) + " mol; mass = × " + MB + " = " + sf(mB) + " g"); },
+    var a = sp(rx, A).c, b = sp(rx, B).c, MA = mrOf(A), nA = nFor(A), mA = nA * MA, nB = nA * b / a, MB = mrOf(B), mB = nB * MB, made = sp(rx, B).side === "R";
+    if (Math.random() < .5) // step 1: mole ratio, step 2: moles → mass
+      return Q("ratio", "<b>" + sf(nA) + " mol</b> of " + fx(A) + " reacts completely. What mass of " + fx(B) + (made ? " is made" : " reacts with it") + "? <span class=\"st\">(" + mrHint([B]) + ")</span>", eqHTML(rx), mB, "g",
+        [{ v: nA * MB, err: "ratio" }, { v: nA * a / b * MB, err: "ratioinv" }, { v: nB / MB, err: "inv" }, { v: nB * wrongMrs(B)[0], err: "mr" }],
+        "n(" + fxt(B) + ") = " + sf(nA) + " × " + b + "/" + a + " = " + sf(nB) + " mol; mass = " + sf(nB) + " × " + MB + " = " + sf(mB) + " g");
+    // step 1: mass → moles, step 2: mole ratio
+    return Q("ratio", "<b>" + gv(mA) + " g</b> of " + fx(A) + " reacts completely. How many moles of " + fx(B) + (made ? " are made" : " react with it") + "? <span class=\"st\">(" + mrHint([A]) + ")</span>", eqHTML(rx), nB, "mol",
+      [{ v: nA, err: "ratio" }, { v: nA * a / b, err: "ratioinv" }, { v: mA * MA * b / a, err: "inv" }, { v: mA / 24 * b / a, err: "konst" }],
+      "n(" + fxt(A) + ") = " + gv(mA) + " ÷ " + MA + " = " + sf(nA) + " mol; n(" + fxt(B) + ") = " + sf(nA) + " × " + b + "/" + a + " = " + sf(nB) + " mol"); },
   rgas: function () { var rx = pick(rxWith(function (r) { return solidR(r).length && gasP(r).length; })), A = solidR(rx)[0], B = gasP(rx)[0];
-    var a = sp(rx, A).c, b = sp(rx, B).c, nA = nFor(A), mA = nA * mrOf(A), nB = nA * b / a, v = nB * VM;
-    return Q("ratio", "What volume of " + fx(B) + " (at r.t.p.) is made when <b>" + gv(mA) + " g</b> of " + fx(A) + " reacts completely? <span class=\"st\">(" + arHint([A]) + ")</span>", eqHTML(rx), v, "dm³",
-      [{ v: a !== b ? nA * VM : nA * 2 * VM, err: "ratio" }, { v: nA * a / b * VM, err: "ratioinv" }, { v: nB * 22.4, err: "v224" }, { v: mA / wrongMrs(A)[0] * b / a * VM, err: "mr" }],
-      "n(" + fxt(A) + ") = " + gv(mA) + " ÷ " + mrOf(A) + " = " + sf(nA) + " mol; n(" + fxt(B) + ") = × " + b + "/" + a + " = " + sf(nB) + " mol; V = × 24 = " + sf(v) + " dm³"); },
+    var a = sp(rx, A).c, b = sp(rx, B).c, nA = nFor(A), nB = nA * b / a, v = nB * VM;
+    return Q("ratio", "<b>" + sf(nA) + " mol</b> of " + fx(A) + " reacts completely. What volume of " + fx(B) + " is made at r.t.p.?", eqHTML(rx), v, "dm³",
+      [{ v: a !== b ? nA * VM : nA * 2 * VM, err: "ratio" }, { v: nA * a / b * VM, err: "ratioinv" }, { v: nB * 22.4, err: "v224" }, { v: nB / VM, err: "inv" }],
+      "n(" + fxt(B) + ") = " + sf(nA) + " × " + b + "/" + a + " = " + sf(nB) + " mol; V = " + sf(nB) + " × 24 = " + sf(v) + " dm³"); },
   conc: function () { var f = pick(SOLUTES), n = pick([0.02, 0.05, 0.1, 0.2, 0.25]), V = pick([100, 200, 250, 500]), m = n * mrOf(f), c = n / (V / 1000);
-    return Q("conc", "<b>" + gv(m) + " g</b> of " + fx(f) + " is dissolved in water to make <b>" + V + " cm³</b> of solution. What is the concentration in mol/dm³? <span class=\"st\">(" + arHint([f]) + ")</span>", "", c, "mol/dm³",
+    return Q("conc", "<b>" + gv(m) + " g</b> of " + fx(f) + " is dissolved in water to make <b>" + V + " cm³</b> of solution. What is the concentration in mol/dm³? <span class=\"st\">(" + mrHint([f]) + ")</span>", "", c, "mol/dm³",
       [{ v: n / V, err: "unit" }, { v: m / (V / 1000), err: "konst" }, { v: n * V / 1000, err: "inv" }, { v: m / wrongMrs(f)[0] / (V / 1000), err: "mr" }],
       "n = " + gv(m) + " ÷ " + mrOf(f) + " = " + sf(n) + " mol; c = " + sf(n) + " ÷ " + sf(V / 1000) + " dm³ = " + sf(c) + " mol/dm³"); },
   gdm: function () { var f = pick(SOLUTES.concat(["H2SO4", "HCl", "HNO3"])), c = pick([0.05, 0.1, 0.2, 0.25, 0.5, 1, 2]), M = mrOf(f), g = c * M, toG = Math.random() < .5;
-    if (toG) return Q("conc", "A solution of " + fx(f) + " is <b>" + sf(c) + " mol/dm³</b>. What is its concentration in <b>g/dm³</b>? <span class=\"st\">(" + arHint([f]) + ")</span>", "", g, "g/dm³",
+    if (toG) return Q("conc", "A solution of " + fx(f) + " is <b>" + sf(c) + " mol/dm³</b>. What is its concentration in <b>g/dm³</b>? <span class=\"st\">(" + mrHint([f]) + ")</span>", "", g, "g/dm³",
       [{ v: c / M, err: "inv" }, { v: c * wrongMrs(f)[0], err: "mr" }, { v: c * 24, err: "konst" }, { v: c * pick(wrongMrs(f)), err: "mr" }], sf(c) + " × " + M + " = " + sf(g) + " g/dm³");
-    return Q("conc", "A solution of " + fx(f) + " contains <b>" + gv(g) + " g/dm³</b>. What is its concentration in <b>mol/dm³</b>? <span class=\"st\">(" + arHint([f]) + ")</span>", "", c, "mol/dm³",
+    return Q("conc", "A solution of " + fx(f) + " contains <b>" + gv(g) + " g/dm³</b>. What is its concentration in <b>mol/dm³</b>? <span class=\"st\">(" + mrHint([f]) + ")</span>", "", c, "mol/dm³",
       [{ v: g * M, err: "inv" }, { v: g / wrongMrs(f)[0], err: "mr" }, { v: g / 24, err: "konst" }, { v: g / pick(wrongMrs(f)), err: "mr" }], gv(g) + " ÷ " + M + " = " + sf(c) + " mol/dm³"); },
-  titr: function () { var t = pick(TIT), cAlk = pick([0.1, 0.2, 0.25, 0.5]), vAlk = pick([20, 25]), cAc = pick([0.1, 0.2, 0.5]);
-    var nAlk = cAlk * vAlk / 1000, nAc = nAlk * t.b / t.a, v = nAc / cAc * 1000;
-    if (v > 100 || v < 5) { cAc = cAlk; nAc = nAlk * t.b / t.a; v = nAc / cAc * 1000; }
-    return Q("conc", "What volume of <b>" + sf(cAc) + " mol/dm³</b> " + fx(t.acid) + " exactly neutralises <b>" + vAlk + ".0 cm³</b> of <b>" + sf(cAlk) + " mol/dm³</b> " + fx(t.alk) + "?", eqStrHTML(t.eq), v, "cm³",
-      [{ v: t.a !== t.b ? nAlk / cAc * 1000 : v * 2, err: "ratio" }, { v: t.a !== t.b ? nAlk * t.a / t.b / cAc * 1000 : v / 2, err: t.a !== t.b ? "ratioinv" : "ratio" }, { v: v / 1000, err: "unit" }, { v: cAc / nAc, err: "inv" }],
-      "n(" + fxt(t.alk) + ") = " + sf(cAlk) + " × " + vAlk / 1000 + " = " + sf(nAlk) + " mol; n(" + fxt(t.acid) + ") = × " + t.b + "/" + t.a + " = " + sf(nAc) + " mol; V = " + sf(nAc) + " ÷ " + sf(cAc) + " = " + sf(nAc / cAc) + " dm³ = " + sf(v) + " cm³"); },
+  titr: function () { var t = pick(TIT), cAlk = pick([0.1, 0.2, 0.25, 0.5]), vAlk = pick([20, 25]);
+    var nAlk = cAlk * vAlk / 1000, nAc = nAlk * t.b / t.a;
+    return Q("conc", "<b>" + vAlk + ".0 cm³</b> of <b>" + sf(cAlk) + " mol/dm³</b> " + fx(t.alk) + " is exactly neutralised by " + fx(t.acid) + ". How many moles of " + fx(t.acid) + " react?", eqStrHTML(t.eq), nAc, "mol",
+      [{ v: t.a !== t.b ? nAlk : nAc * 2, err: "ratio" }, { v: t.a !== t.b ? nAlk * t.a / t.b : nAc / 2, err: t.a !== t.b ? "ratioinv" : "ratio" }, { v: cAlk * vAlk * t.b / t.a, err: "unit" }, { v: cAlk / (vAlk / 1000) * t.b / t.a, err: "inv" }],
+      "n(" + fxt(t.alk) + ") = " + sf(cAlk) + " × " + vAlk + "/1000 = " + sf(nAlk) + " mol; n(" + fxt(t.acid) + ") = " + sf(nAlk) + " × " + t.b + "/" + t.a + " = " + sf(nAc) + " mol"); },
   limit: function () { var rx = pick(rxWith(function (r) { return solidR(r).length && acidL(r).length && gasP(r).length; })), A = solidR(rx)[0], C = acidL(rx)[0], G = gasP(rx)[0];
-    var a = sp(rx, A).c, c = sp(rx, C).c, g = sp(rx, G).c, nA = nFor(A), conc = pick([0.5, 1, 2]);
-    var acidLimits = Math.random() < .55, nC = acidLimits ? nA * c / a * pick([0.4, 0.5, 0.6]) : nA * c / a * pick([1.5, 2]);
-    conc = pick([0.5, 1, 2].filter(function (x) { var vv = nC / x * 1000; return vv >= 20 && vv <= 500; })) || 2;
-    var V = Math.max(10, Math.round(nC / conc * 1000 / 5) * 5); nC = conc * V / 1000;
-    var fromA = nA * g / a, fromC = nC * g / c, nG = Math.min(fromA, fromC), v = nG * VM, excessV = Math.max(fromA, fromC) * VM, mA = nA * mrOf(A);
-    return Q("limit", "<b>" + gv(mA) + " g</b> of " + fx(A) + " is added to <b>" + V + " cm³</b> of <b>" + sf(conc) + " mol/dm³</b> " + fx(C) + ". What volume of " + fx(G) + " forms at r.t.p.? <span class=\"st\">(" + arHint([A]) + ")</span>", eqHTML(rx), v, "dm³",
-      [{ v: excessV, err: "limit" }, { v: (fromC < fromA ? nC : nA) * VM, err: "ratio" }, { v: nG * 22.4, err: "v224" }, { v: v * 1000, err: "unit" }],
-      "n(" + fxt(A) + ") = " + sf(nA) + " mol, n(" + fxt(C) + ") = " + sf(conc) + " × " + sf(V / 1000) + " = " + sf(nC) + " mol. " + (fromC < fromA ? fxt(C) : fxt(A)) + " runs out first, so n(" + fxt(G) + ") = " + sf(nG) + " mol; V = × 24 = " + sf(v) + " dm³"); },
+    var a = sp(rx, A).c, c = sp(rx, C).c, g = sp(rx, G).c, nA = pick([0.05, 0.1, 0.15, 0.2]);
+    var acidLimits = Math.random() < .55, nC = +(nA * c / a * pick(acidLimits ? [0.4, 0.5] : [1.5, 2])).toPrecision(3);
+    var fromA = nA * g / a, fromC = nC * g / c, nG = Math.min(fromA, fromC), lim = fromC < fromA ? C : A, nLim = fromC < fromA ? nC : nA, kLim = fromC < fromA ? c : a;
+    return Q("limit", "<b>" + sf(nA) + " mol</b> of " + fx(A) + " is added to <b>" + sf(nC) + " mol</b> of " + fx(C) + ". How many moles of " + fx(G) + " form?", eqHTML(rx), nG, "mol",
+      [{ v: Math.max(fromA, fromC), err: "limit" }, { v: nLim, err: "ratio" }, { v: nLim * kLim / g, err: "ratioinv" }, { v: nG * VM, err: "konst" }],
+      "From " + fxt(A) + ": " + sf(nA) + " × " + g + "/" + a + " = " + sf(fromA) + " mol. From " + fxt(C) + ": " + sf(nC) + " × " + g + "/" + c + " = " + sf(fromC) + " mol. " + fxt(lim) + " runs out first, so " + sf(nG) + " mol of " + fxt(G) + " forms"); },
   yield: function () { var rx = pick(rxWith(function (r) { return solidR(r).length && massP(r).filter(function (x) { return solidR(r).indexOf(x) < 0; }).length; })), A = solidR(rx)[0], B = massP(rx).filter(function (x) { return x !== A; })[0];
     var a = sp(rx, A).c, b = sp(rx, B).c, nA = nFor(A), mA = nA * mrOf(A), nB = nA * b / a, theo = nB * mrOf(B), y = pick([60, 65, 70, 75, 80, 85, 90]), act = +(theo * y / 100).toPrecision(3), yy = act / theo * 100;
     var w = [{ v: theo / act * 100, err: "pctinv" }, { v: act / mA * 100, err: "masscmp" }, { v: act / (nB * wrongMrs(B)[0]) * 100, err: "mr" }]; if (a !== b) w.push({ v: act / (nA * mrOf(B)) * 100, err: "ratio" });
-    return Q("yield", "<b>" + gv(mA) + " g</b> of " + fx(A) + " reacts completely, but only <b>" + gv(act) + " g</b> of " + fx(B) + " is collected. What is the percentage yield? <span class=\"st\">(" + arHint([A, B]) + ")</span>", eqHTML(rx), yy, "", w,
+    return Q("yield", "<b>" + gv(mA) + " g</b> of " + fx(A) + " reacts completely, but only <b>" + gv(act) + " g</b> of " + fx(B) + " is collected. What is the percentage yield? <span class=\"st\">(" + mrHint([A, B]) + ")</span>", eqHTML(rx), yy, "", w,
       "n(" + fxt(A) + ") = " + sf(nA) + " mol → n(" + fxt(B) + ") = " + sf(nB) + " mol → theoretical " + gv(theo) + " g; " + gv(act) + " ÷ " + gv(theo) + " × 100 = " + sf(yy) + " %", pct); },
   purity: function () { var rx = pick(rxWith(function (r) { return /CO3/.test(r.L[0][1]) && gasP(r).indexOf("CO2") > -1; })), A = rx.L[0][1], nA = nFor(A), pure = nA * mrOf(A), pp = pick([60, 70, 75, 80, 90]), sample = +(pure / pp * 100).toPrecision(3), p = pure / sample * 100, v = nA * VM;
-    return Q("purity", "A <b>" + gv(sample) + " g</b> sample of impure " + fx(A) + " reacts with excess acid and gives <b>" + gv(v) + " dm³</b> of CO<span class=\"sub\">2</span> at r.t.p. What is the percentage purity? <span class=\"st\">(" + arHint([A]) + ")</span>", eqHTML(rx), p, "",
+    return Q("purity", "A <b>" + gv(sample) + " g</b> sample of impure " + fx(A) + " reacts with excess acid and gives <b>" + gv(v) + " dm³</b> of CO<span class=\"sub\">2</span> at r.t.p. What is the percentage purity? <span class=\"st\">(" + mrHint([A]) + ")</span>", eqHTML(rx), p, "",
       [{ v: sample / pure * 100, err: "pctinv" }, { v: v / 22.4 * mrOf(A) / sample * 100, err: "v224" }, { v: nA * wrongMrs(A)[0] / sample * 100, err: "mr" }, { v: nA * 44 / sample * 100, err: "masscmp" }],
       "n(CO₂) = " + gv(v) + " ÷ 24 = " + sf(nA) + " mol = n(" + fxt(A) + "); mass = × " + mrOf(A) + " = " + gv(pure) + " g; " + gv(pure) + " ÷ " + gv(sample) + " × 100 = " + sf(p) + " %", pct); },
   mr: function () { var f = pick(BRACKETS.concat(["Na2CO3", "CuSO4", "H2SO4"])), M = mrOf(f);
@@ -1023,18 +1018,15 @@ function show(id) {
 }
 
 /* =================== START SCREEN =================== */
-var G = { lv: load("lv", "easy") };
+var G = { lv: "easy" };   // Combined Science questions only
 (function setup() {
   var sel = $("in-cls");
   CLASSES.forEach(function (c) { var o = document.createElement("option"); o.textContent = c; sel.appendChild(o); });
   var st = load("student", null);
   if (st) { $("in-name").value = st.name || ""; sel.value = st.cls || ""; $("in-reg").value = st.reg || ""; }
-  ["lv-easy", "lv-hard"].forEach(function (id) { $(id).addEventListener("click", function () { G.lv = this.dataset.lv; store("lv", G.lv); paintStart(); }); });
   paintStart();
 })();
 function paintStart() {
-  $("lv-easy").setAttribute("aria-pressed", G.lv === "easy");
-  $("lv-hard").setAttribute("aria-pressed", G.lv === "hard");
   var b = load("best", {})[G.lv];
   $("txt-best").textContent = b != null ? b + " points" : "–";
 }
@@ -1543,7 +1535,7 @@ function answer(i) {
     msg = (err === "timeout" ? "The Mole struck first. You ran out of time." : "<b>" + esc(ERR[err].label) + ".</b> " + esc(ERR[err].tip)) +
       '<br><span class="ans">Answer: ' + esc(q.right) + '</span><br><span class="work">' + esc(q.work) + "</span>";
   }
-  logAnswer("boss", q.type, ok, err, stripTags(q.text).replace(/\s*\(Ar:.*\)\s*$/, ""), o ? o.t : "(no answer)", q.right, null);
+  logAnswer("boss", q.type, ok, err, stripTags(q.text).replace(/\s*\((Ar|Mr)\b.*\)\s*$/, ""), o ? o.t : "(no answer)", q.right, null);
   if (!B.phase2 && B.hp > 0 && B.hp <= B.maxhp / 2) {
     B.phase2 = true; B.bag = [];
     setTimeout(function () { var p = document.createElement("div"); p.className = "phase"; p.textContent = "THE MOLE IS ANGRY!"; $("b-stage").appendChild(p); setTimeout(function () { p.remove(); }, 2200); }, 700);
