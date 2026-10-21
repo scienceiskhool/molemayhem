@@ -112,7 +112,8 @@ label.f input:focus, label.f select:focus { outline: 3px solid var(--yellow); ou
 .best b { color: var(--ink); }
 .how { margin: 0; padding-left: 1.2em; font-size: .9rem; font-weight: 600; color: var(--muted); }
 @media (min-width: 760px) { .start { grid-template-columns: 1.05fr 1fr; gap: 28px; } }
-@media (max-width: 420px) { .modes { grid-template-columns: 1fr; } .hero .cast { width: 96px; } }
+@media (max-width: 420px) { .topbar .brand small { display: none; } .topbar .brand b { font-size: .95rem; }
+  .modes { grid-template-columns: 1fr; } .hero .cast { width: 96px; } }
 
 /* ---------- dark arcade (climb + boss) ---------- */
 body.dark { background: var(--night); }
@@ -148,12 +149,54 @@ body.dark footer a { color: var(--neon-teal); }
 .crumb .q { border: 2px solid var(--night-3); border-radius: 6px; padding: 0 6px; color: #fff; white-space: nowrap; }
 .crumb .q.now { border-color: var(--neon-yellow); color: var(--neon-yellow); }
 .cwrap { position: relative; align-self: center; line-height: 0; }
+/* phones and upright iPads: compact question panel and controls so the game screen gets the space */
+@media (max-width: 819px), (max-aspect-ratio: 1/1) {
+  body.playing .topbar { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 6px); right: calc(env(safe-area-inset-right, 0px) + 10px); z-index: 20; padding: 0; gap: 6px; border: 0; background: transparent !important; }
+  body.playing .topbar .brand { display: none; }
+  body.playing .chud { padding-right: 116px; min-height: 34px; }
+  body.playing .icon-btn { width: 32px; height: 32px; border-radius: 9px; box-shadow: 0 2px 0 currentColor; }
+  body.playing .icon-btn svg { width: 16px; height: 16px; }
+  body.playing .wrap { padding: 6px 10px 8px; }
+  .climb { gap: 6px; }
+  .chud { font-size: .5rem; gap: 8px; }
+  .chud .hearts svg { width: 18px; height: 16px; }
+  .calc-btn { padding: 5px 7px; font-size: .5rem; }
+  .qstrip { min-height: 0; padding: 6px 10px; gap: 3px; border-width: 2px; }
+  .qhead { font-size: .45rem; }
+  .qtext { font-size: .95rem; line-height: 1.35; }
+  .qeqline { font-size: .85rem; }
+  .qhint { font-size: .8rem; }
+  .crumb { font-size: .75rem; }
+  .toast { font-size: .8rem; padding: 6px 8px; left: 6px; right: 6px; top: 6px; }
+  .pad { gap: 6px; }
+  .pad button { height: 50px; font-size: 1.2rem; box-shadow: 0 3px 0 var(--neon-teal); }
+  .pad .jump { box-shadow: 0 3px 0 var(--neon-orange); }
+  .bq { font-size: 1.05rem; }
+  .qeq { font-size: 1rem; }
+}
+@media (min-width: 600px) and (max-aspect-ratio: 1/1) { /* upright iPad: a bit more room for text */
+  .qtext { font-size: 1.1rem; } .qhint { font-size: .9rem; } .crumb { font-size: .85rem; } .chud { font-size: .58rem; } .pad button { height: 58px; }
+}
+/* laptops and landscape tablets: question panel on the left, big game screen on the right */
+@media (min-width: 820px) and (min-aspect-ratio: 1/1) {
+  body.playing .wrap { max-width: 1500px; }
+  .climb { display: grid; grid-template-columns: minmax(300px, 400px) 1fr; grid-template-rows: auto auto auto auto 1fr;
+    grid-template-areas: "hud game" "q game" "pad game" "keys game" ". game"; column-gap: 20px; row-gap: 12px; align-items: start; }
+  #c-hud { grid-area: hud; flex-wrap: wrap; font-size: .66rem; }
+  #c-hud .hearts svg { width: 26px; height: 24px; }
+  #c-q { grid-area: q; padding: 14px 16px; gap: 8px; }
+  #c-wrap { grid-area: game; justify-self: center; align-self: start; }
+  #pad { grid-area: pad; grid-template-columns: repeat(2, 1fr); }
+  #pad .jump { grid-column: span 2; }
+  .keys { grid-area: keys; text-align: left; line-height: 2.2; }
+  .rotate { display: none !important; }
+}
 #cv { display: block; border: 3px solid var(--neon-teal); border-radius: 6px; background: var(--night); box-shadow: 0 0 0 3px var(--night), 0 0 22px rgba(46,242,224,.3); touch-action: none; }
 .toast { position: absolute; left: 8px; right: 8px; top: 8px; line-height: 1.4; font-weight: 700; font-size: .92rem; padding: 8px 10px; border-radius: 6px; border: 3px solid var(--neon-green); background: rgba(13,11,26,.94); color: #fff; z-index: 3; pointer-events: none; }
 .toast.bad { border-color: var(--neon-red); }
 .toast b { color: var(--neon-green); }
 .toast.bad b { color: var(--neon-red); }
-.cover { position: absolute; inset: 0; background: rgba(13,11,26,.88); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; padding: 18px; line-height: 1.5; z-index: 4; border-radius: 6px; }
+.cover { position: fixed; inset: 0; background: rgba(13,11,26,.94); overflow-y: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; padding: 24px 18px; line-height: 1.5; z-index: 25; }
 .cover h2 { font-family: var(--pixel); color: var(--neon-yellow); font-size: clamp(1rem, 5vw, 1.5rem); line-height: 1.4; margin: 0; text-shadow: 3px 3px 0 var(--neon-orange); }
 .cover h2.red { color: var(--neon-red); text-shadow: 3px 3px 0 var(--night-3); }
 .cover .lvname { font-family: var(--pixel); font-size: .6rem; color: var(--neon-teal); }
@@ -1167,11 +1210,19 @@ function hideToast() { $("c-toast").hidden = true; }
 function fit() {
   if ($("scr-climb").hidden) return;
   var wrap = $("c-wrap").parentNode, cs = getComputedStyle(document.querySelector(".wrap"));
-  var others = document.querySelector(".topbar").offsetHeight + $("c-hud").offsetHeight + $("c-q").offsetHeight +
+  var side = getComputedStyle(wrap).display === "grid", padV = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+  if (side) { // question panel beside the game: the game can use the full height
+    var aH = window.innerHeight - document.querySelector(".topbar").offsetHeight - padV - 12, aW = wrap.clientWidth - $("c-q").offsetWidth - 26;
+    return sizeCanvas(Math.max(0.45, Math.min(aW / W, aH / H, 2.4)));
+  }
+  var tb = document.querySelector(".topbar"), others = (getComputedStyle(tb).position === "fixed" ? 0 : tb.offsetHeight) + $("c-hud").offsetHeight + $("c-q").offsetHeight +
     ($("pad").offsetParent ? $("pad").offsetHeight : 0) + (document.querySelector(".keys").offsetParent ? document.querySelector(".keys").offsetHeight : 0) +
     parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) + 8 * 3 + 6;
   var availH = window.innerHeight - others, availW = wrap.clientWidth - 6;
-  SCALE = Math.max(0.45, Math.min(availW / W, availH / H, 1.5));
+  sizeCanvas(Math.max(0.45, Math.min(availW / W, availH / H, 1.5)));
+}
+function sizeCanvas(sc) {
+  SCALE = sc;
   var dpr = Math.min(window.devicePixelRatio || 1, 2.5);
   cv.style.width = Math.round(W * SCALE) + "px"; cv.style.height = Math.round(H * SCALE) + "px";
   cv.width = Math.round(W * SCALE * dpr); cv.height = Math.round(H * SCALE * dpr);
